@@ -1,21 +1,22 @@
 import { Link } from 'react-router-dom'
+import style  from './Header.module.css'
 function Header () {
     return (
         <>
-            <div>
+            <div className={style.div_header}>
                 <div>
-                    <img src="" alt="" />
+                    <img src="public/images/home_icon.png" alt="icon_home" className={style.image_icon}/>
                 </div>
                 <nav>
                     <ul>
-                        <Link to="/">Accueil</Link>
-                        <Link to="/Annonces">Annonces</Link>
-                        <Link to="/Login">Login</Link>
+                        <Link to="/" className={style.space_link}>Accueil</Link>
+                        <Link to="/Annonces" className={style.space_link}>Annonces</Link>
+                        <Link to="/Login" className={style.space_link}>Login</Link>
                     </ul>
                 </nav>
             </div>
         </>
-    )
+    );
 }
 
 export default Header

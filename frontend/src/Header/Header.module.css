@@ -1,0 +1,18 @@
+.div_header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgb(244, 217, 185);
+}
+
+.image_icon {
+    width: 40px;
+    height: 40px;
+    margin: 10px;
+
+}
+
+.space_link {
+    margin-right: 10px;
+    margin-left: 10px;
+}
