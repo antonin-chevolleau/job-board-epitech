@@ -9,9 +9,9 @@ function Header () {
                 </div>
                 <nav>
                     <ul>
-                        <Link to="/" className={style.space_link}>Accueil</Link>
-                        <Link to="/Annonces" className={style.space_link}>Annonces</Link>
-                        <Link to="/Login" className={style.space_link}>Login</Link>
+                        <Link to="/" className={style.link}>Accueil</Link>
+                        <Link to="/Annonces" className={style.link}>Annonces</Link>
+                        <Link to="/Login" className={style.link}>Login</Link>
                     </ul>
                 </nav>
             </div>

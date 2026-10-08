@@ -12,7 +12,12 @@
 
 }
 
-.space_link {
+.link {
     margin-right: 10px;
     margin-left: 10px;
+    text-decoration: none;
+    color: rgb(75, 75, 75);
+}
+.link:hover {
+    color: black;
 }
