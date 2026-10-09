@@ -8,7 +8,7 @@ function Login() {
     const [password, setPassword] = useState("")
 
 
-    const handleSubmit = (event) => {
+    const StartConnection = (event) => {
         event.preventDefault()
         console.log("création du compte avec : ", { email, password })
     }

@@ -7,7 +7,7 @@ function Annonces () {
     const [error, setError] = useState(null)
 
     useEffect(() => {
-        fetch('https://ton-api.com/api/jobs') // Remplace par l'URL de ton API
+        fetch('https://localhost/api/advertisement') // Remplace par l'URL de ton API
             .then((response) => {
                 if (!response.ok) {
                     throw new Error('Erreur lors de la récupération des annonces')
