@@ -33,3 +33,8 @@
 .link:hover {
     color: black;
 }
+
+.login_title {
+    text-align: center;
+    font-weight: bold;
+}

@@ -1,23 +1,48 @@
 import { Link } from 'react-router-dom'
-import style  from './Header.module.css'
+import style from './Login.module.css'
+import { useState } from 'react'
 
-function Login () {
+function Login() {
+
+    const [email, setMail] = useState("")
+    const [password, setPassword] = useState("")
+
+
+    const handleSubmit = (event) => {
+        event.preventDefault()
+        console.log("création du compte avec : ", { email, password })
+    }
+
+
     return (
         <>
-            <div className={style.div_header}>
-                <div>
-                    <img src="public/images/home_icon.png" alt="icon_home" className={style.image_icon}/>
+            <div className={style.div}>
+                <p className={style.login_title}>Login</p>
+                <form className={style.form} onSubmit={StartConnection}>
+                    <label htmlFor="email">Email</label>
+                    <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setMail(e.target.value)}
+                        className={style.input}
+                        required
+                    />
+                    <label htmlFor="password">Mot de passe</label>
+                    <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className={style.input}
+                        required
+                    />
+                    <button type="submit">Se connecter</button>
+                </form>
+                <div className={style.div_link}>
+                    <Link to="/CreateAccount" className={style.link}>J'ai pas de compte</Link>
                 </div>
-                <nav>
-                    <ul>
-                        <Link to="/" className={style.link}>Accueil</Link>
-                        <Link to="/Annonces" className={style.link}>Annonces</Link>
-                        <Link to="/Login" className={style.link}>Login</Link>
-                    </ul>
-                </nav>
+
             </div>
         </>
-    );
+    )
 }
-
-export default Header
+export default Login

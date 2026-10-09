@@ -11,6 +11,7 @@ function CreateAccount() {
     return (
         <>
             <div className={style.div}>
+                <p className={style.login_title}>Création de compte</p>
                 <form className={style.form}>
                     <label htmlFor="email">Email</label>
                     <input
@@ -18,6 +19,7 @@ function CreateAccount() {
                         value={email}
                         onChange={(e) => setMail(e.target.value)}
                         className={style.input}
+                        required
                     />
                     <label htmlFor="password">Mot de passe</label>
                     <input
@@ -25,6 +27,7 @@ function CreateAccount() {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className={style.input}
+                        required
                     />
                     <button type="submit">Créer mon compte</button>
                 </form>

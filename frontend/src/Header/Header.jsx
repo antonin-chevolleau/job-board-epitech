@@ -5,7 +5,7 @@ function Header () {
         <>
             <div className={style.div_header}>
                 <div>
-                    <img src="public/images/home_icon.png" alt="icon_home" className={style.image_icon}/>
+                    <img src="/images/home_icon.png" alt="icon_home" className={style.image_icon}/>
                 </div>
                 <nav>
                     <ul>
