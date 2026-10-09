@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
+from app.routers import advertisements
 
 # L'application FastAPI : point d'entrée lancé par `fastapi dev main.py`
 app = FastAPI()
@@ -21,6 +22,10 @@ app.add_middleware(
     allow_methods=["*"],  # GET, POST, PUT, DELETE...
     allow_headers=["*"],
 )
+
+
+# Branche les routes de /advertisements sur l'application
+app.include_router(advertisements.router)
 
 
 # Route de test : GET http://127.0.0.1:8000/
