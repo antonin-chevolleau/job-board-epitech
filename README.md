@@ -1,1 +1,1 @@
-# Job Board | Projet Epitech
+# Job Board | Epitech
