@@ -1,0 +1,28 @@
+.div {
+    display: flex;
+    flex-direction: column;
+    width: 500px;
+    background-color: azure;
+    padding: 20px;
+    margin: 0 auto;
+    margin-top: 20px;
+}
+
+.button {
+    width: 20%;
+
+}
+.div_button {
+    display: flex;
+    justify-content: end;
+}
+
+.job_title {
+    font-weight: bold;
+    margin: 0;
+    font-size: 20px;
+}
+
+.date_creation {
+    margin: 0;
+}
