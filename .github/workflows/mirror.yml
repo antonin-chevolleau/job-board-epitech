@@ -1,8 +1,8 @@
-name: Mirror vers le repo Epitech
+name: Mirror vers le repo perso
 
 on:
   push:
-    branches: [main]
+    branches: ["**"]
 
 jobs:
   mirror:
@@ -14,9 +14,9 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Push vers le repo Epitech
+      - name: Push vers le repo perso
         env:
           PAT: ${{ secrets.EPITECH_PAT }}
         run: |
-          git remote add epitech https://x-access-token:${PAT}@github.com/antonin-chevolleau/job-board-epitech.git
-          git push epitech main --force
+          git remote add perso https://x-access-token:${PAT}@github.com/antonin-chevolleau/job-board-epitech.git
+          git push perso HEAD:main --force
