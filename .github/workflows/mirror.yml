@@ -1,0 +1,22 @@
+name: Mirror vers le repo Epitech
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout complet
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Push vers le repo Epitech
+        env:
+          PAT: ${{ secrets.EPITECH_PAT }}
+        run: |
+          git remote add epitech https://x-access-token:${PAT}@github.com/antonin-chevolleau/job-board-epitech.git
+          git push epitech main --force
