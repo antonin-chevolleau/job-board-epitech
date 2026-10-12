@@ -1,12 +1,18 @@
 import enum
 from datetime import datetime
 from decimal import Decimal
+from typing import TYPE_CHECKING
 
-from sqlalchemy import DECIMAL, TIMESTAMP, Enum, String, Text
+from sqlalchemy import DECIMAL, TIMESTAMP, Enum, ForeignKey, String, Text
 from sqlalchemy.dialects.mysql import INTEGER
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
+
+# Imports réservés au typage : évitent un import circulaire à l'exécution.
+if TYPE_CHECKING:
+    from app.models.application import Application
+    from app.models.company import Company
 
 
 # Valeurs possibles de la colonne ENUM `contract_type`.
@@ -49,7 +55,17 @@ class Advertisement(Base):
     status: Mapped[AdvertisementStatus] = mapped_column(
         Enum(AdvertisementStatus, values_callable=lambda e: [m.value for m in e])
     )
-    company_id: Mapped[int] = mapped_column(INTEGER(unsigned=True))
+    # ForeignKey : clé étrangère vers companies.id (déjà présente en base)
+    company_id: Mapped[int] = mapped_column(
+        INTEGER(unsigned=True), ForeignKey("companies.id", ondelete="CASCADE")
+    )
     # created_at / updated_at sont remplis automatiquement par MySQL
     created_at: Mapped[datetime] = mapped_column(TIMESTAMP)
     updated_at: Mapped[datetime] = mapped_column(TIMESTAMP)
+
+    # relationship : navigation entre objets (advertisement.company, ...),
+    # sans colonne supplémentaire en base.
+    company: Mapped["Company"] = relationship(back_populates="advertisements")
+    applications: Mapped[list["Application"]] = relationship(
+        back_populates="advertisement", passive_deletes=True
+    )

@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.models.advertisement import AdvertisementStatus, ContractType
 
@@ -27,3 +27,37 @@ class AdvertisementRead(BaseModel):
     company_id: int
     created_at: datetime
     updated_at: datetime
+
+
+# Schéma de CRÉATION : décrit le JSON que le client envoie (POST).
+# FastAPI le valide avant d'appeler la route : si une règle n'est pas respectée,
+# le client reçoit automatiquement une erreur 422.
+# id, created_at et updated_at n'y figurent pas : ils sont générés par la base.
+class AdvertisementCreate(BaseModel):
+    # Field(...) ajoute des règles : longueur min/max (alignées sur les
+    # colonnes VARCHAR), ge=0 = « supérieur ou égal à 0 ».
+    title: str = Field(min_length=1, max_length=150)
+    short_description: str = Field(min_length=1, max_length=300)
+    full_description: str = Field(min_length=1)
+    salary: Decimal | None = Field(default=None, ge=0, max_digits=10, decimal_places=2)
+    location: str | None = Field(default=None, max_length=150)
+    working_time: str | None = Field(default=None, max_length=50)
+    contract_type: ContractType | None = None
+    # Une annonce est un brouillon tant qu'on ne la publie pas explicitement.
+    status: AdvertisementStatus = AdvertisementStatus.draft
+    company_id: int = Field(ge=1)
+
+
+# Schéma de MISE À JOUR PARTIELLE (PATCH) : tous les champs sont facultatifs.
+# Dans la route, on utilisera model_dump(exclude_unset=True) pour ne modifier
+# que les champs réellement envoyés par le client.
+# Pas de company_id : on ne change pas l'entreprise d'une annonce existante.
+class AdvertisementUpdate(BaseModel):
+    title: str | None = Field(default=None, min_length=1, max_length=150)
+    short_description: str | None = Field(default=None, min_length=1, max_length=300)
+    full_description: str | None = Field(default=None, min_length=1)
+    salary: Decimal | None = Field(default=None, ge=0, max_digits=10, decimal_places=2)
+    location: str | None = Field(default=None, max_length=150)
+    working_time: str | None = Field(default=None, max_length=50)
+    contract_type: ContractType | None = None
+    status: AdvertisementStatus | None = None
