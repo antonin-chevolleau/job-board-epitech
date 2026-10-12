@@ -2,7 +2,7 @@ import enum
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import TIMESTAMP, Enum, String
+from sqlalchemy import TIMESTAMP, Enum, FetchedValue, String
 from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -28,11 +28,18 @@ class Person(Base):
     lastname: Mapped[str] = mapped_column(String(50))
     email: Mapped[str] = mapped_column(String(255), unique=True)
     phone: Mapped[str | None] = mapped_column(String(20))
+    # server_default=FetchedValue() : valeur par défaut posée par MySQL
+    # (« user ») quand on n'en fournit pas ; SQLAlchemy n'envoie pas NULL.
     role: Mapped[PersonRole] = mapped_column(
-        Enum(PersonRole, values_callable=lambda e: [m.value for m in e])
+        Enum(PersonRole, values_callable=lambda e: [m.value for m in e]),
+        server_default=FetchedValue(),
     )
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMP)
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMP)
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, server_default=FetchedValue()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, server_default=FetchedValue(), server_onupdate=FetchedValue()
+    )
 
     # Une personne peut avoir déposé plusieurs candidatures.
     applications: Mapped[list["Application"]] = relationship(

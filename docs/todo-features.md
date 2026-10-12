@@ -11,19 +11,26 @@
   - [x] Initialiser PyMySQL
   - [x] Initialiser le `.env`
 - [x] Table `companies` (entreprises)
-- [x] Table `advertisements` (annonces : titre, description courte, description complète, salaire, lieu, temps de travail, entreprise, responsable)
-- [x] Table `people` (responsables d'annonce et candidats ; champ de rôle pour distinguer l'admin)
-- [x] Table `applications` (candidatures : personne, annonce, message, emails envoyés, date)
+- [x] Table `advertisements` (annonces : titre, description courte, description complète, salaire, lieu, temps de travail, entreprise)
+- [x] Table `people` (candidats ; champ de rôle pour distinguer l'admin)
+- [x] Table `applications` (candidatures : personne, annonce, message, date)
 - [x] Relations et clés étrangères entre les tables
 - [x] Champs cohérents avec les informations affichées sur le front
-- [x] Remplir la base via le backend (pas d'insertion manuelle)
-- [x] Prévoir un compte admin (seed ou champ de rôle)
+- [/] Remplir la base via le backend (pas d'insertion manuelle)
+- [/] Prévoir un compte admin (seed ou champ de rôle)
+  - [x] Champ de rôle (`people.role`)
+  - [ ] Seed du compte admin
 
 ## 2. API (FastAPI)
 
-- [/] Structure du projet + schémas Pydantic (validation / sérialisation)
+- [x] Structure du projet + schémas Pydantic (validation / sérialisation)
 - [ ] CRUD `companies`
-- [ ] CRUD `advertisements`
+- [x] CRUD `advertisements`
+  - [x] `GET /advertisements` (liste)
+  - [x] `GET /advertisements/{id}`
+  - [x] `POST`
+  - [x] `PATCH`
+  - [x] `DELETE`
 - [ ] CRUD `people`
 - [ ] CRUD `applications`
 - [ ] Verbes HTTP corrects et routes RESTful
@@ -32,8 +39,9 @@
 - [ ] Protection des routes d'administration (admin uniquement, côté API)
 - [ ] Pagination sur les listes
 - [ ] Toutes les données dynamiques du front passent par l'API
-- [ ] Configuration CORS pour le front
-- [ ] Linter / formatage avec Ruff
+- [x] Configuration CORS pour le front
+- [x] Linter / formatage avec Ruff
+- [ ] Tests (pytest)
 
 ## 3. Front — Job board (page principale)
 

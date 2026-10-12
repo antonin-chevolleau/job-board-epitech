@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import TIMESTAMP, String, Text
+from sqlalchemy import TIMESTAMP, FetchedValue, String, Text
 from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -24,8 +24,12 @@ class Company(Base):
     address: Mapped[str | None] = mapped_column(String(255))
     city: Mapped[str | None] = mapped_column(String(100))
     country: Mapped[str | None] = mapped_column(String(100))
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMP)
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMP)
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, server_default=FetchedValue()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, server_default=FetchedValue(), server_onupdate=FetchedValue()
+    )
 
     # Une entreprise a plusieurs annonces (côté « un » de la relation).
     # passive_deletes=True : on laisse MySQL appliquer ON DELETE CASCADE.

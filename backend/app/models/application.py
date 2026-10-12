@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime
 
-from sqlalchemy import TIMESTAMP, Enum, ForeignKey, Text
+from sqlalchemy import TIMESTAMP, Enum, FetchedValue, ForeignKey, Text
 from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -31,11 +31,17 @@ class Application(Base):
         INTEGER(unsigned=True), ForeignKey("advertisements.id", ondelete="CASCADE")
     )
     message: Mapped[str] = mapped_column(Text)
+    # Valeur par défaut (« pending ») posée par MySQL, cf. Person.role
     status: Mapped[ApplicationStatus] = mapped_column(
-        Enum(ApplicationStatus, values_callable=lambda e: [m.value for m in e])
+        Enum(ApplicationStatus, values_callable=lambda e: [m.value for m in e]),
+        server_default=FetchedValue(),
     )
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMP)
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMP)
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, server_default=FetchedValue()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, server_default=FetchedValue(), server_onupdate=FetchedValue()
+    )
 
     person: Mapped[Person] = relationship(back_populates="applications")
     advertisement: Mapped[Advertisement] = relationship(back_populates="applications")

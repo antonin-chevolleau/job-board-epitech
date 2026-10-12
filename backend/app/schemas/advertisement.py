@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.advertisement import AdvertisementStatus, ContractType
 
@@ -61,3 +61,13 @@ class AdvertisementUpdate(BaseModel):
     working_time: str | None = Field(default=None, max_length=50)
     contract_type: ContractType | None = None
     status: AdvertisementStatus | None = None
+
+    # Ces colonnes sont NOT NULL en base : on peut ne pas les envoyer (champ
+    # absent = inchangé), mais pas les envoyer à null. Ce validateur ne
+    # s'exécute que si le champ est présent dans le JSON.
+    @field_validator("title", "short_description", "full_description", "status")
+    @classmethod
+    def reject_null(cls, value):
+        if value is None:
+            raise ValueError("ne peut pas être null")
+        return value

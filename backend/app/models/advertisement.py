@@ -3,7 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DECIMAL, TIMESTAMP, Enum, ForeignKey, String, Text
+from sqlalchemy import DECIMAL, TIMESTAMP, Enum, FetchedValue, ForeignKey, String, Text
 from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -60,8 +60,12 @@ class Advertisement(Base):
         INTEGER(unsigned=True), ForeignKey("companies.id", ondelete="CASCADE")
     )
     # created_at / updated_at sont remplis automatiquement par MySQL
-    created_at: Mapped[datetime] = mapped_column(TIMESTAMP)
-    updated_at: Mapped[datetime] = mapped_column(TIMESTAMP)
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, server_default=FetchedValue()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP, server_default=FetchedValue(), server_onupdate=FetchedValue()
+    )
 
     # relationship : navigation entre objets (advertisement.company, ...),
     # sans colonne supplémentaire en base.
