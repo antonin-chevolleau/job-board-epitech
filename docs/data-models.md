@@ -1,5 +1,24 @@
 # Data models
 
+Les quatre tables métier ci-dessous sont conservées. Les dates générées par le
+backend sont en UTC. `python -m app.seed` crée les tables manquantes ; il ne fait
+pas de migration destructive des tables existantes.
+
+## Authentification (non exposée par les routes CRUD)
+
+- `credentials` : `people_id` (clé primaire et étrangère vers `people.id`),
+  `password_hash` (VARCHAR(255), PBKDF2-SHA256 avec sel aléatoire).
+- `auth_sessions` : `token_hash` (VARCHAR(64), clé primaire), `people_id`
+  (clé étrangère), `expires_at` (DATETIME UTC).
+- Suppression d'une personne : suppression en cascade de ses identifiants et
+  sessions. Les anciennes personnes sans ligne `credentials` restent des fiches,
+  sans possibilité de connexion. Aucun hash n'est renvoyé dans `PersonRead`.
+- Rôle `user` à l'inscription ; le rôle admin est créé explicitement par le seed.
+- Les colonnes métier `created_at` et `updated_at` sont aussi renseignées par
+  SQLAlchemy pour permettre le fonctionnement sur SQLite local.
+
+## Tables métier
+
 ### `advertisements`
 
 ```js

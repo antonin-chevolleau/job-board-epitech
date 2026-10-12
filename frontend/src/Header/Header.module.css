@@ -3,6 +3,9 @@
     justify-content: space-between;
     align-items: center;
     background-color: rgb(244, 217, 185);
+    padding: 16px 24px;
+    flex-wrap: wrap;
+    gap: 16px;
 }
 
 .image_icon {

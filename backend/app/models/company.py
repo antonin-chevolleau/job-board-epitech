@@ -5,6 +5,7 @@ from sqlalchemy import TIMESTAMP, FetchedValue, String, Text
 from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.clock import utcnow
 from app.database import Base
 
 # Import réservé au typage : évite un import circulaire à l'exécution.
@@ -25,10 +26,14 @@ class Company(Base):
     city: Mapped[str | None] = mapped_column(String(100))
     country: Mapped[str | None] = mapped_column(String(100))
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP, server_default=FetchedValue()
+        TIMESTAMP, default=utcnow, server_default=FetchedValue()
     )
     updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP, server_default=FetchedValue(), server_onupdate=FetchedValue()
+        TIMESTAMP,
+        default=utcnow,
+        onupdate=utcnow,
+        server_default=FetchedValue(),
+        server_onupdate=FetchedValue(),
     )
 
     # Une entreprise a plusieurs annonces (côté « un » de la relation).

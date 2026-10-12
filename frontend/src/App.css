@@ -1,0 +1,33 @@
+* { box-sizing: border-box; }
+body { color: #24312f; font-family: system-ui, sans-serif; line-height: 1.6; }
+main { max-width: 1200px; margin: auto; padding: 24px; }
+a { color: #15635b; text-underline-offset: 3px; }
+.brand { font-size: 1.5rem; font-weight: 800; text-decoration: none; }
+button { background: #176b61; color: white; border: 1px solid #176b61; border-radius: 8px; padding: 10px 16px; cursor: pointer; font: inherit; }
+button:hover:not(:disabled) { background: #104f47; }
+button:disabled { opacity: .5; cursor: not-allowed; }
+button[aria-pressed="true"] { outline: 3px solid #e3af60; }
+:focus-visible { outline: 3px solid #bd7723; outline-offset: 3px; }
+label { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; font-weight: 600; }
+input, textarea, select { width: 100%; min-width: 0; border: 1px solid #a5b6b1; border-radius: 6px; padding: 10px; font: inherit; background: white; color: #24312f; }
+textarea { resize: vertical; }
+form button { margin-bottom: 14px; }
+[role="alert"] { background: #fff0ec; color: #922b16; border-radius: 6px; padding: 12px; overflow-wrap: anywhere; }
+[role="status"] { color: #176b61; }
+.hero { padding: 26px 0 34px; max-width: 800px; }
+.hero h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.15; margin: 10px 0; }
+.annonces-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 22px; align-items: start; }
+.badge { align-self: start; padding: 3px 10px; border-radius: 15px; background: #e3f0e7; font-size: .85rem; font-weight: 700; }
+.details, .application-form { margin-top: 20px; padding-top: 16px; border-top: 1px solid #dce4dd; }
+.preserve-lines { white-space: pre-wrap; }
+dt { font-weight: 700; } dd { margin: 0 0 8px; }
+.actions, .pagination { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 20px 0; }
+.pagination { justify-content: center; }
+.admin-form, .confirmation { background: white; border: 1px solid #ddd; border-radius: 10px; padding: 24px; margin: 20px 0; }
+.admin-form { max-width: 700px; }
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; background: white; font-size: .9rem; }
+th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; min-width: 100px; max-width: 350px; overflow-wrap: anywhere; }
+th { background: #e3f0e7; }
+td button { white-space: nowrap; margin: 4px 0; }
+@media (max-width: 600px) { main { padding: 16px; } }

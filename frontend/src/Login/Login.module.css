@@ -1,5 +1,6 @@
 .div {
-    width: 200px;
+    width: 100%;
+    max-width: 440px;
     background-color: white;
     padding: 20px;
     border-radius: 5px;

@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from app.config import settings
@@ -8,11 +8,22 @@ from app.config import settings
 # les erreurs quand MySQL a fermé une connexion restée inactive.
 # connect_args passe le certificat CA au driver PyMySQL pour chiffrer la
 # connexion (SSL) et vérifier l'identité du serveur Aiven.
+connect_args = {}
+if settings.database_url.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+elif settings.ca_cert_path:
+    connect_args = {"ssl": {"ca": settings.ca_cert_path}}
+
 engine = create_engine(
-    settings.database_url,
-    pool_pre_ping=True,
-    connect_args={"ssl": {"ca": settings.ca_cert_path}},
+    settings.database_url, pool_pre_ping=True, connect_args=connect_args
 )
+
+if engine.dialect.name == "sqlite":
+
+    @event.listens_for(engine, "connect")
+    def enable_foreign_keys(connection, _):
+        connection.execute("PRAGMA foreign_keys=ON")
+
 
 # Fabrique de sessions. Une session = une "conversation" avec la base
 # (requêtes + transaction). autoflush=False : rien n'est envoyé à la base

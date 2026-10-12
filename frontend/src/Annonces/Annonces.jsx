@@ -1,46 +1,40 @@
 import { useState, useEffect } from 'react'
 import Advertisement from '../Advertisement/Advertisement.jsx'
+import { api } from '../api'
+import { useAuth } from '../auth'
 
-function Annonces () {
-    const [ads, setAds] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [error, setError] = useState(null)
+const pageSize = 12
+export default function Annonces() {
+  const { user, loading: sessionLoading } = useAuth()
+  const [ads, setAds] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [page, setPage] = useState(0)
+  const [retry, setRetry] = useState(0)
 
-    useEffect(() => {
-        fetch('https://localhost/api/advertisement') // Remplace par l'URL de ton API
-            .then((response) => {
-                if (!response.ok) {
-                    throw new Error('Erreur lors de la récupération des annonces')
-                }
-                return response.json()
-            })
-            .then((data) => {
-                setAds(data)
-                setLoading(false)
-            })
-            .catch((err) => {
-                setError(err.message)
-                setLoading(false)
-            })
-    }, []) // Le tableau vide [] exécute le fetch une seule fois au chargement
+  useEffect(() => {
+    if (sessionLoading) return
+    const controller = new AbortController()
+    api(`/advertisements/?offset=${page * pageSize}&limit=${pageSize}`, { signal: controller.signal })
+      .then(setAds)
+      .catch((err) => { if (err.name !== 'AbortError') setError(err.message) })
+      .finally(() => { if (!controller.signal.aborted) setLoading(false) })
+    return () => controller.abort()
+  }, [page, retry, user?.id, sessionLoading])
 
-    if (loading) return <p>Chargement des annonces...</p>
-    if (error) return <p>Erreur : {error}</p>
-
-    return (
-        <section className="annonces-list">
-            {ads.map((ad) => (
-                <Advertisement
-                    key={ad.id} // Nécessaire pour React (utilise l'ID unique de ton API)
-                    job_title={ad.job_title}
-                    contract_type={ad.contract_type}
-                    create_at={ad.create_at}
-                    location={ad.location}
-                    short_description={ad.short_description}
-                />
-            ))}
-        </section>
-    )
+  function changePage(next) { setLoading(true); setError(''); setPage(next) }
+  return <section>
+    <div className="hero"><p>Votre prochain chapitre commence ici</p><h1>Trouvez le poste qui vous correspond</h1><p>Découvrez les offres et échangez avec les recruteurs.</p></div>
+    {loading || sessionLoading ? <p role="status">Chargement des annonces…</p> : error ? <div role="alert">
+      <p>{error}</p><button onClick={() => { setError(''); setLoading(true); setRetry(retry + 1) }}>Réessayer</button>
+    </div> : <>
+      {!ads.length && <p>Aucune annonce disponible sur cette page.</p>}
+      <div className="annonces-list">{ads.map((ad) => <Advertisement key={ad.id} ad={ad} />)}</div>
+    </>}
+    <nav className="pagination" aria-label="Pagination des annonces">
+      <button disabled={loading || page === 0} onClick={() => changePage(page - 1)}>Précédent</button>
+      <span>Page {page + 1}</span>
+      <button disabled={loading || !!error || ads.length < pageSize} onClick={() => changePage(page + 1)}>Suivant</button>
+    </nav>
+  </section>
 }
-
-export default Annonces

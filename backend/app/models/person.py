@@ -6,6 +6,7 @@ from sqlalchemy import TIMESTAMP, Enum, FetchedValue, String
 from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.clock import utcnow
 from app.database import Base
 
 # Import réservé au typage : évite un import circulaire à l'exécution.
@@ -32,13 +33,18 @@ class Person(Base):
     # (« user ») quand on n'en fournit pas ; SQLAlchemy n'envoie pas NULL.
     role: Mapped[PersonRole] = mapped_column(
         Enum(PersonRole, values_callable=lambda e: [m.value for m in e]),
-        server_default=FetchedValue(),
+        default=PersonRole.user,
+        server_default="user",
     )
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP, server_default=FetchedValue()
+        TIMESTAMP, default=utcnow, server_default=FetchedValue()
     )
     updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP, server_default=FetchedValue(), server_onupdate=FetchedValue()
+        TIMESTAMP,
+        default=utcnow,
+        onupdate=utcnow,
+        server_default=FetchedValue(),
+        server_onupdate=FetchedValue(),
     )
 
     # Une personne peut avoir déposé plusieurs candidatures.

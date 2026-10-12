@@ -1,97 +1,65 @@
-# Job Board — Todo des features
+# Job Board — État de la livraison
 
-> Stack retenue : FastAPI + SQLAlchemy + PyMySQL + MySQL (back) · React + React Router DOM + CSS Modules (front)
+Référence finale : `sujets/jobBoard-project.pdf`. Guide d'intégration :
+`sujets/jobBoard-bootstrap.pdf`. Installation et limites : `README.md`.
 
-## 1. Base de données (MySQL)
+## 1. Base de données
 
-- [x] Créer la base MySQL et la connexion (SQLAlchemy + PyMySQL, variables dans `.env`)
-  - [x] DB créée et hébergée sur aiven
-  - [x] Initialiser FastAPI
-  - [x] Initialiser SQLAlchemy
-  - [x] Initialiser PyMySQL
-  - [x] Initialiser le `.env`
-- [x] Table `companies` (entreprises)
-- [x] Table `advertisements` (annonces : titre, description courte, description complète, salaire, lieu, temps de travail, entreprise)
-- [x] Table `people` (candidats ; champ de rôle pour distinguer l'admin)
-- [x] Table `applications` (candidatures : personne, annonce, message, date)
-- [x] Relations et clés étrangères entre les tables
-- [x] Champs cohérents avec les informations affichées sur le front
-- [/] Remplir la base via le backend (pas d'insertion manuelle)
-- [/] Prévoir un compte admin (seed ou champ de rôle)
-  - [x] Champ de rôle (`people.role`)
-  - [ ] Seed du compte admin
+- [x] Modèles SQLAlchemy : companies, advertisements, people, applications
+- [x] Relations, clés étrangères et suppression en cascade
+- [x] MySQL/Aiven configurable ; SQLite pour le développement et les tests isolés
+- [x] Initialisation explicite des tables via `python -m app.seed`
+- [x] Données de démonstration créées par le backend (`--demo`)
+- [x] Création explicite d'un administrateur, sans mot de passe prédéfini
+- [x] Tables séparées pour les identifiants et les sessions
+- [x] Requêtes SQL d'entraînement (`bootstrap-queries.sql`)
+- [ ] Validation de l'intégration sur la base MySQL distante (non exécutée ici)
 
-## 2. API (FastAPI)
+## 2. API
 
-- [x] Structure du projet + schémas Pydantic (validation / sérialisation)
-- [ ] CRUD `companies`
-- [x] CRUD `advertisements`
-  - [x] `GET /advertisements` (liste)
-  - [x] `GET /advertisements/{id}`
-  - [x] `POST`
-  - [x] `PATCH`
-  - [x] `DELETE`
-- [ ] CRUD `people`
-- [ ] CRUD `applications`
-- [ ] Verbes HTTP corrects et routes RESTful
-- [ ] Endpoint de candidature (enregistrement en BDD)
-- [ ] Authentification (inscription, connexion, modification de compte)
-- [ ] Protection des routes d'administration (admin uniquement, côté API)
-- [ ] Pagination sur les listes
-- [ ] Toutes les données dynamiques du front passent par l'API
-- [x] Configuration CORS pour le front
-- [x] Linter / formatage avec Ruff
-- [ ] Tests (pytest)
+- [x] CRUD annonces, entreprises, personnes et candidatures
+- [x] Route des annonces par entreprise
+- [x] Candidature visiteur ou connecté, message conservé en base
+- [x] Inscription, connexion, déconnexion et modification du compte
+- [x] Contrôle des rôles côté serveur et sessions expirables/révocables
+- [x] Mots de passe PBKDF2-SHA256 salés ; jetons stockés sous forme de hash
+- [x] Masquage des annonces non publiées pour le public
+- [x] Pagination, erreurs de validation, conflits et ressources absentes
+- [x] CORS configurable et environnement local documenté
+- [x] Tests API pytest et lint/format Ruff
 
-## 3. Front — Job board (page principale)
+## 3. Frontend
 
-- [ ] Liste des annonces (titre, courte description)
-- [ ] Bouton « Learn more » : détails complets via l'API, sans rechargement, sans popup
-- [ ] Bouton « Apply » : ouverture du formulaire de candidature
-- [ ] Formulaire : nom, email, téléphone, message au propriétaire de l'annonce
-- [ ] Candidature enregistrée en BDD
-- [ ] Gestion des états (chargement, erreurs, confirmation d'envoi)
+- [x] Liste paginée des annonces : titre, description courte, lieu, contrat, date
+- [x] Détails complets obtenus par fetch, sans rechargement ni popup
+- [x] Formulaire de candidature et confirmation après enregistrement
+- [x] Coordonnées du compte utilisées automatiquement pour un candidat connecté
+- [x] Pages d'inscription, connexion et modification du profil
+- [x] Redirection selon le rôle après connexion
+- [x] Administration protégée : listes, création, modification, suppression, pagination
+- [x] Chargement, erreurs et actions de reprise
+- [x] Conservation des composants existants et adaptation responsive des styles
+- [x] ESLint et build Vite
+- [x] Test Chromium de bout en bout, avec base et serveurs temporaires
 
-## 4. Front — Authentification
+## 4. Livraison
 
-- [ ] Page de connexion
-- [ ] Page de création / modification de compte
-- [ ] Utilisateur connecté : infos pré-remplies dans le formulaire de candidature
-- [ ] Redirection après connexion : admin → administration, autre → job board
-- [ ] Routes protégées (React Router DOM)
+- [x] README : installation, configuration, lancement, schéma, routes et pages
+- [x] Fichiers `.env.example` pour les deux applications
+- [x] Tests locaux sans accès à Aiven
+- [ ] Déploiement backend Render / frontend Vercel
+- [ ] Validation fonctionnelle sur MySQL et environnement déployé
 
-## 5. Front — Administration
+## 5. Limites / étapes suivantes
 
-- [ ] Accès réservé à l'admin
-- [ ] Lister les enregistrements de toutes les tables
-- [ ] Créer un enregistrement
-- [ ] Modifier un enregistrement
-- [ ] Supprimer un enregistrement
-- [ ] Pagination des listes
-- [ ] Mise en page simple et conviviale
+- [ ] Vérification d'email et récupération du mot de passe
+- [ ] Conversion sécurisée d'une fiche visiteur existante en compte
+- [ ] Limitation des tentatives de connexion avant ouverture publique
+- [ ] Envoi réel d'emails (actuellement : stockage des messages en base)
+- [ ] Import/scraping d'offres, si retenu par l'équipe
 
-## 6. Design et qualité
-
-- [ ] Fonctionnalités d'abord, puis raffinement du design
-- [ ] Design soigné (CSS Modules, UX globale agréable)
-- [ ] Lint front avec ESLint
-- [ ] Tout tester en local
-
-## 7. Livraison
-
-- [ ] README : installation, configuration, lancement
-- [ ] README : schéma de la base de données
-- [ ] README : routes de l'API
-- [ ] README : pages du front
-
-## 8. Déploiement (selon les specs techniques)
-
-- [ ] Back-end sur Render
-- [ ] Front-end sur Vercel
-- [ ] BDD sur Aiven
-
-## Points à clarifier
-
-- [ ] Envoi réel d'emails ou simple enregistrement en base ?
-- [ ] Périmètre de la « collecte » d'offres (scraping / import) ?
-- [ ] Mécanisme d'authentification (sessions ou JWT)
+Une adresse déjà enregistrée ne peut pas être utilisée pour une candidature
+anonyme : il faut se connecter, ou contacter l'administrateur si c'est une fiche
+sans compte. Ce choix évite d'associer un visiteur à l'identité d'une autre personne.
+Les catégories de l'exemple HireLoop ne sont pas exigées par le sujet final et
+n'ont pas été ajoutées au schéma existant.

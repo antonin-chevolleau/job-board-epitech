@@ -7,6 +7,7 @@ from sqlalchemy import DECIMAL, TIMESTAMP, Enum, FetchedValue, ForeignKey, Strin
 from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.clock import utcnow
 from app.database import Base
 
 # Imports réservés au typage : évitent un import circulaire à l'exécution.
@@ -61,10 +62,14 @@ class Advertisement(Base):
     )
     # created_at / updated_at sont remplis automatiquement par MySQL
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP, server_default=FetchedValue()
+        TIMESTAMP, default=utcnow, server_default=FetchedValue()
     )
     updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP, server_default=FetchedValue(), server_onupdate=FetchedValue()
+        TIMESTAMP,
+        default=utcnow,
+        onupdate=utcnow,
+        server_default=FetchedValue(),
+        server_onupdate=FetchedValue(),
     )
 
     # relationship : navigation entre objets (advertisement.company, ...),

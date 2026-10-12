@@ -5,6 +5,7 @@ from sqlalchemy import TIMESTAMP, Enum, FetchedValue, ForeignKey, Text
 from sqlalchemy.dialects.mysql import INTEGER
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from app.clock import utcnow
 from app.database import Base
 from app.models.advertisement import Advertisement
 from app.models.person import Person
@@ -34,13 +35,18 @@ class Application(Base):
     # Valeur par défaut (« pending ») posée par MySQL, cf. Person.role
     status: Mapped[ApplicationStatus] = mapped_column(
         Enum(ApplicationStatus, values_callable=lambda e: [m.value for m in e]),
-        server_default=FetchedValue(),
+        default=ApplicationStatus.pending,
+        server_default="pending",
     )
     created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP, server_default=FetchedValue()
+        TIMESTAMP, default=utcnow, server_default=FetchedValue()
     )
     updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP, server_default=FetchedValue(), server_onupdate=FetchedValue()
+        TIMESTAMP,
+        default=utcnow,
+        onupdate=utcnow,
+        server_default=FetchedValue(),
+        server_onupdate=FetchedValue(),
     )
 
     person: Mapped[Person] = relationship(back_populates="applications")

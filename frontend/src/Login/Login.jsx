@@ -1,48 +1,31 @@
-import { Link } from 'react-router-dom'
-import style from './Login.module.css'
+import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { useAuth } from '../auth'
+import style from './Login.module.css'
 
-function Login() {
-
-    const [email, setMail] = useState("")
-    const [password, setPassword] = useState("")
-
-
-    const StartConnection = (event) => {
-        event.preventDefault()
-        console.log("création du compte avec : ", { email, password })
-    }
-
-
-    return (
-        <>
-            <div className={style.div}>
-                <p className={style.login_title}>Login</p>
-                <form className={style.form} onSubmit={StartConnection}>
-                    <label htmlFor="email">Email</label>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setMail(e.target.value)}
-                        className={style.input}
-                        required
-                    />
-                    <label htmlFor="password">Mot de passe</label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        className={style.input}
-                        required
-                    />
-                    <button type="submit">Se connecter</button>
-                </form>
-                <div className={style.div_link}>
-                    <Link to="/CreateAccount" className={style.link}>J'ai pas de compte</Link>
-                </div>
-
-            </div>
-        </>
-    )
+export default function Login() {
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+  const { login } = useAuth()
+  const navigate = useNavigate()
+  async function submit(event) {
+    event.preventDefault()
+    const body = Object.fromEntries(new FormData(event.currentTarget))
+    setBusy(true); setError('')
+    try {
+      const user = await login(body)
+      navigate(user.role === 'admin' ? '/Admin' : '/Annonces')
+    } catch (err) { setError(err.message) }
+    finally { setBusy(false) }
+  }
+  return <section className={style.div}>
+    <h1>Connexion</h1>
+    <form className={style.form} onSubmit={submit}>
+      <label>Email<input name="email" type="email" autoComplete="email" required /></label>
+      <label>Mot de passe<input name="password" type="password" autoComplete="current-password" required maxLength={128} /></label>
+      {error && <p role="alert">{error}</p>}
+      <button disabled={busy}>{busy ? 'Connexion…' : 'Se connecter'}</button>
+    </form>
+    <Link to="/CreateAccount">Créer un compte</Link>
+  </section>
 }
-export default Login

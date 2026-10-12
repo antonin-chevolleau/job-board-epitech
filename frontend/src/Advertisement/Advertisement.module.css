@@ -1,11 +1,13 @@
 .div {
     display: flex;
     flex-direction: column;
-    width: 500px;
-    background-color: azure;
+    width: 100%;
+    background-color: white;
+    border: 1px solid #dce4dd;
+    box-shadow: 0 4px 15px #24312f08;
     padding: 20px;
     margin: 0 auto;
-    margin-top: 20px;
+    gap: 8px;
     border-radius: 10px;
 }
 
@@ -15,7 +17,9 @@
 }
 .div_button {
     display: flex;
-    justify-content: end;
+    justify-content: start;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .job_title {

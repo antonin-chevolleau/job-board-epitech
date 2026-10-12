@@ -1,100 +1,120 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, HTTPException, Query, Response
 from sqlalchemy import select
-from sqlalchemy.orm import Session
 
-from app.database import get_db
-from app.models.advertisement import Advertisement
+from app.models.advertisement import Advertisement, AdvertisementStatus
+from app.models.application import Application
 from app.models.company import Company
+from app.models.person import Person, PersonRole
 from app.schemas.advertisement import (
     AdvertisementCreate,
     AdvertisementRead,
     AdvertisementUpdate,
 )
+from app.schemas.application import ApplicationRead
+from app.schemas.auth import Apply
+from app.security import Admin, Db, OptionalUser
 
-# Un router regroupe les routes d'une même ressource.
-# prefix : toutes les routes ci-dessous commencent par /advertisements
-# tags : regroupe ces routes dans la doc auto (/docs)
 router = APIRouter(prefix="/advertisements", tags=["advertisements"])
 
 
-# GET /advertisements : renvoie toutes les annonces.
-# response_model : FastAPI convertit chaque objet SQLAlchemy en AdvertisementRead
-# (donc en JSON) et documente la forme de la réponse dans /docs.
+def visible_ad(advertisement_id, db, user):
+    ad = db.get(Advertisement, advertisement_id)
+    if ad is None or (
+        ad.status != AdvertisementStatus.published
+        and (user is None or user.role != PersonRole.admin)
+    ):
+        raise HTTPException(404, "Annonce introuvable.")
+    return ad
+
+
 @router.get("/", response_model=list[AdvertisementRead])
-def list_advertisements(db: Annotated[Session, Depends(get_db)]):
-    # select(Advertisement) = SELECT * FROM advertisements
-    # scalars().all() = récupère toutes les lignes sous forme d'objets Advertisement
-    return db.scalars(select(Advertisement)).all()
-
-
-# GET /advertisements/{advertisement_id} : renvoie une annonce par son id.
-# {advertisement_id} est un paramètre de chemin : FastAPI le convertit en int
-# (422 automatique si ce n'est pas un entier).
-@router.get("/{advertisement_id}", response_model=AdvertisementRead)
-def get_advertisement(advertisement_id: int, db: Annotated[Session, Depends(get_db)]):
-    # db.get(Model, pk) = SELECT ... WHERE id = :id, renvoie None si absent
-    advertisement = db.get(Advertisement, advertisement_id)
-    if advertisement is None:
-        raise HTTPException(status_code=404, detail="Advertisement not found")
-    return advertisement
-
-
-# POST /advertisements : crée une annonce.
-# Le corps JSON est validé par AdvertisementCreate (422 si invalide).
-# status_code=201 : « Created », le code HTTP standard pour une création.
-@router.post("/", response_model=AdvertisementRead, status_code=status.HTTP_201_CREATED)
-def create_advertisement(
-    payload: AdvertisementCreate, db: Annotated[Session, Depends(get_db)]
+def list_advertisements(
+    db: Db,
+    user: OptionalUser,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
 ):
-    # On vérifie l'entreprise avant d'insérer : sans ça, la clé étrangère
-    # ferait échouer l'INSERT et le client recevrait une erreur 500.
+    query = select(Advertisement)
+    if user is None or user.role != PersonRole.admin:
+        query = query.where(Advertisement.status == AdvertisementStatus.published)
+    return db.scalars(
+        query.order_by(Advertisement.id.desc()).offset(offset).limit(limit)
+    ).all()
+
+
+@router.get("/{advertisement_id}", response_model=AdvertisementRead)
+def get_advertisement(advertisement_id: int, db: Db, user: OptionalUser):
+    return visible_ad(advertisement_id, db, user)
+
+
+@router.post("/", response_model=AdvertisementRead, status_code=201)
+def create_advertisement(payload: AdvertisementCreate, db: Db, admin: Admin):
     if db.get(Company, payload.company_id) is None:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail="Company not found",
-        )
-    # model_dump() : schéma Pydantic -> dict, dépacké en arguments du modèle
-    advertisement = Advertisement(**payload.model_dump())
-    db.add(advertisement)
+        raise HTTPException(404, "Entreprise introuvable.")
+    ad = Advertisement(**payload.model_dump())
+    db.add(ad)
     db.commit()
-    # refresh : relit la ligne pour récupérer les valeurs générées par MySQL
-    # (id, created_at, updated_at)
-    db.refresh(advertisement)
-    return advertisement
+    db.refresh(ad)
+    return ad
 
 
-# PATCH /advertisements/{advertisement_id} : modifie une annonce (partiellement).
-# Seuls les champs présents dans le JSON sont modifiés.
 @router.patch("/{advertisement_id}", response_model=AdvertisementRead)
 def update_advertisement(
-    advertisement_id: int,
-    payload: AdvertisementUpdate,
-    db: Annotated[Session, Depends(get_db)],
+    advertisement_id: int, payload: AdvertisementUpdate, db: Db, admin: Admin
 ):
-    advertisement = db.get(Advertisement, advertisement_id)
-    if advertisement is None:
-        raise HTTPException(status_code=404, detail="Advertisement not found")
-    # exclude_unset=True : ignore les champs que le client n'a pas envoyés
-    # (différent de « envoyés à null », qui permet d'effacer un champ facultatif)
+    ad = visible_ad(advertisement_id, db, admin)
     for field, value in payload.model_dump(exclude_unset=True).items():
-        setattr(advertisement, field, value)
+        setattr(ad, field, value)
     db.commit()
-    db.refresh(advertisement)
-    return advertisement
+    db.refresh(ad)
+    return ad
 
 
-# DELETE /advertisements/{advertisement_id} : supprime une annonce.
-# 204 « No Content » : succès, sans corps de réponse. Les candidatures liées
-# sont supprimées par MySQL (ON DELETE CASCADE).
-@router.delete("/{advertisement_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_advertisement(
-    advertisement_id: int, db: Annotated[Session, Depends(get_db)]
-):
-    advertisement = db.get(Advertisement, advertisement_id)
-    if advertisement is None:
-        raise HTTPException(status_code=404, detail="Advertisement not found")
-    db.delete(advertisement)
+@router.delete("/{advertisement_id}", status_code=204)
+def delete_advertisement(advertisement_id: int, db: Db, admin: Admin):
+    db.delete(visible_ad(advertisement_id, db, admin))
     db.commit()
-    return Response(status_code=status.HTTP_204_NO_CONTENT)
+    return Response(status_code=204)
+
+
+@router.post(
+    "/{advertisement_id}/applications", response_model=ApplicationRead, status_code=201
+)
+def apply(advertisement_id: int, payload: Apply, db: Db, user: OptionalUser):
+    ad = visible_ad(advertisement_id, db, user)
+    if ad.status != AdvertisementStatus.published:
+        raise HTTPException(409, "Cette annonce n’accepte pas de candidatures.")
+    person = user
+    if person is None:
+        if not payload.firstname or not payload.lastname or not payload.email:
+            raise HTTPException(400, "Prénom, nom et email sont obligatoires.")
+        email = payload.email.lower()
+        # Never attach an anonymous request to someone else's account.
+        if db.scalar(select(Person).where(Person.email == email)):
+            raise HTTPException(
+                409,
+                "Adresse déjà utilisée : connectez-vous ou contactez l’administrateur.",
+            )
+        person = Person(
+            firstname=payload.firstname,
+            lastname=payload.lastname,
+            email=email,
+            phone=payload.phone,
+        )
+        db.add(person)
+        db.flush()
+    if db.scalar(
+        select(Application).where(
+            Application.people_id == person.id, Application.advertisement_id == ad.id
+        )
+    ):
+        raise HTTPException(409, "Vous avez déjà postulé à cette annonce.")
+    application = Application(
+        people_id=person.id, advertisement_id=ad.id, message=payload.message
+    )
+    db.add(application)
+    db.commit()
+    db.refresh(application)
+    return application
