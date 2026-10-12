@@ -9,6 +9,15 @@ from app.models.advertisement import AdvertisementStatus, ContractType
 # Schéma de LECTURE : décrit la forme du JSON renvoyé par l'API.
 # Le modèle SQLAlchemy parle à la base ; le schéma Pydantic parle au client.
 # Les deux sont séparés pour contrôler précisément ce qui sort de l'API.
+class AdvertisementCompanyRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    name: str
+    city: str | None
+    country: str | None
+
+
 class AdvertisementRead(BaseModel):
     # from_attributes=True : permet à Pydantic de lire directement un objet
     # SQLAlchemy (advertisement.title) et pas seulement un dictionnaire.
@@ -25,6 +34,7 @@ class AdvertisementRead(BaseModel):
     contract_type: ContractType | None
     status: AdvertisementStatus
     company_id: int
+    company: AdvertisementCompanyRead | None = None
     created_at: datetime
     updated_at: datetime
 

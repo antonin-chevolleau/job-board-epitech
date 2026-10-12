@@ -30,5 +30,6 @@ export default function App() {
         <Route path="*" element={<p>Cette page n’existe pas.</p>} />
       </Routes>
     </main>
+    <footer className="footer">tanière · Made with care by Teka, Antonin & Najet · Epitech 2026</footer>
   </AuthProvider>
 }

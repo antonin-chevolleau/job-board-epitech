@@ -1,4 +1,4 @@
-# Mise en place locale du projet JobBoard
+fai# Mise en place locale du projet JobBoard
 
 Ce guide explique comment démarrer le projet après un `git pull`.
 

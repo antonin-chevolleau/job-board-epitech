@@ -1,33 +1,78 @@
-.div {
-    display: flex;
-    flex-direction: column;
+.card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 18px;
     width: 100%;
-    background-color: white;
-    border: 1px solid #dce4dd;
-    box-shadow: 0 4px 15px #24312f08;
-    padding: 20px;
-    margin: 0 auto;
-    gap: 8px;
-    border-radius: 10px;
+    background: var(--linen);
+    border: 1px solid rgba(107, 62, 34, 0.12);
+    box-shadow: var(--soft-shadow);
+    padding: clamp(20px, 3vw, 30px);
+    border-radius: 22px;
 }
 
-.button {
-    width: 20%;
-
+.initial {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--sand);
+    color: var(--rust);
+    font-family: var(--font-title);
+    font-size: 1.45rem;
+    font-weight: 700;
 }
-.div_button {
-    display: flex;
-    justify-content: start;
-    flex-wrap: wrap;
-    gap: 10px;
+
+.content {
+    min-width: 0;
+}
+
+.meta {
+    color: var(--cocoa);
+    font-weight: 700;
+    margin: 0 0 10px;
 }
 
 .job_title {
-    font-weight: bold;
-    margin: 0;
-    font-size: 20px;
+    margin: 0 0 6px;
+    font-size: clamp(1.45rem, 3vw, 2.2rem);
 }
 
-.date_creation {
-    margin: 0;
+.summary {
+    color: var(--espresso);
+    font-size: 1.05rem;
+    max-width: 780px;
+}
+
+.badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.buttons {
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.detailGrid {
+    display: grid;
+    grid-template-columns: 1.1fr .9fr;
+    gap: 24px;
+}
+
+@media (max-width: 720px) {
+    .card,
+    .detailGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .initial {
+        width: 42px;
+        height: 42px;
+    }
 }
