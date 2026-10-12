@@ -1,0 +1,22 @@
+name: Mirror vers le repo perso
+
+on:
+  push:
+    branches: ["**"]
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout complet
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Push vers le repo perso
+        env:
+          PAT: ${{ secrets.EPITECH_PAT }}
+        run: |
+          git remote add perso https://x-access-token:${PAT}@github.com/antonin-chevolleau/job-board-epitech.git
+          git push perso HEAD:main --force
