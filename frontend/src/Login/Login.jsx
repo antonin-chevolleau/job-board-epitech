@@ -42,7 +42,7 @@ export default function Login() {
           <label style={{ flexDirection: 'row', alignItems: 'center', margin: 0 }}>
             <input type="checkbox" style={{ width: 'auto' }} /> Remember me
           </label>
-          <a href="#forgot">Forgot password?</a>
+          <span className="auth-note">Password reset coming soon</span>
         </div>
         {error && <p role="alert">{error}</p>}
         <button disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>

@@ -25,7 +25,6 @@ export default function Header() {
     </Link>
     <nav className={style.nav} aria-label="Navigation principale">
       <Link to="/Annonces" className={style.link}>Jobs</Link>
-      <Link to="/Annonces" className={style.link}>Companies</Link>
       {user ? <>
         <Link to="/Account" className={style.link}>Mon compte</Link>
         {user.role === 'admin' && <Link to="/Admin" className={style.link}>Admin</Link>}

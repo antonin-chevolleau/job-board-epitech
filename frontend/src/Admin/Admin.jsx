@@ -96,51 +96,86 @@ function ResourcePanel({ resource }) {
     }
   }
 
-  const columns = rows.length ? Object.keys(rows[0]).filter((column) => column !== 'full_description') : []
-  return <section>
-    <div className="actions">
+  const columns = rows.reduce((names, row) => {
+    Object.keys(row).forEach((column) => {
+      if (column !== 'full_description' && !names.includes(column)) names.push(column)
+    })
+    return names
+  }, [])
+  return <section className="resource-panel">
+    <header className="resource-header">
       <div>
+        <p className="eyebrow">Administration · {resource}</p>
         <h1>{resources[resource].label}</h1>
-        <p>List, create, edit and delete records.</p>
+        <p className="resource-description">Manage, create and update {resources[resource].label.toLowerCase()}.</p>
       </div>
       <button onClick={() => { setRecord({}); setNotice('') }}>{resources[resource].action}</button>
-    </div>
+    </header>
     {notice && <p role="status">{notice}</p>}
     {record && <ResourceForm key={record.id || 'new'} resource={resource} record={record} onCancel={() => setRecord(null)} onSaved={() => { setRecord(null); reload('Record saved.') }} />}
-    {error && <div role="alert"><p>{error}</p><button onClick={() => reload()}>Retry</button></div>}
+    {error && <div role="alert"><p>{error}</p><button type="button" onClick={() => reload()}>Retry</button></div>}
     {deleting !== null && <div className="confirmation">
       <p>Delete #{deleting}? Linked records may also be deleted. This action is final.</p>
-      <button disabled={busy} onClick={remove}>Confirm deletion</button>{' '}
-      <button className="secondary" disabled={busy} onClick={() => setDeleting(null)}>Cancel</button>
+      <div className="confirmation-actions">
+        <button type="button" disabled={busy} onClick={remove}>Confirm deletion</button>
+        <button className="secondary" type="button" disabled={busy} onClick={() => setDeleting(null)}>Cancel</button>
+      </div>
     </div>}
-    {loading ? <p role="status">Loading…</p> : <div className="table-scroll">
-      {!rows.length ? <p>No record on this page.</p> : <table>
-        <caption>Showing {page * pageSize + 1}–{page * pageSize + rows.length} of {resources[resource].label.toLowerCase()}</caption>
-        <thead><tr>{columns.map((column) => <th key={column} scope="col">{column}</th>)}<th scope="col">Actions</th></tr></thead>
+    {loading ? <p role="status">Loading…</p> : <div className="table-scroll" tabIndex="0" aria-label={`Scrollable ${resources[resource].label.toLowerCase()} table`}>
+      {!rows.length ? <p className="empty-state">No record on this page.</p> : <table className="admin-table">
+        <caption>
+          Showing {page * pageSize + 1}–{page * pageSize + rows.length} of {resources[resource].label.toLowerCase()}, page {page + 1}
+        </caption>
+        <thead>
+          <tr>
+            {columns.map((column) => <th key={column} scope="col" className={`column-${column}`}>{column.replaceAll('_', ' ')}</th>)}
+            <th scope="col" className="actions-column">Actions</th>
+          </tr>
+        </thead>
         <tbody>{rows.map((row) => <tr key={row.id}>
-          {columns.map((column) => <td key={column}>{formatValue(row[column])}</td>)}
-          <td><button className="secondary" onClick={() => setRecord(row)}>Edit #{row.id}</button> <button className="secondary" onClick={() => setDeleting(row.id)}>Delete #{row.id}</button></td>
+          {columns.map((column) => {
+            const value = formatValue(row[column])
+            return <td key={column} className={`column-${column}`} data-label={column.replaceAll('_', ' ')} title={value}>{value}</td>
+          })}
+          <td className="table-actions" data-label="Actions">
+            <button type="button" className="secondary" aria-label={`Edit ${resources[resource].label.toLowerCase()} #${row.id}`} onClick={() => setRecord(row)}>Edit</button>
+            <button type="button" className="secondary" aria-label={`Delete ${resources[resource].label.toLowerCase()} #${row.id}`} onClick={() => setDeleting(row.id)}>Delete</button>
+          </td>
         </tr>)}</tbody>
       </table>}
     </div>}
     <nav className="pagination" aria-label="Pagination des enregistrements">
-      <button className="secondary" disabled={!page || loading} onClick={() => { setLoading(true); setError(''); setPage(page - 1) }}>1</button>
+      <button type="button" className="secondary" disabled={!page || loading} onClick={() => { setLoading(true); setError(''); setPage(page - 1) }}>Previous</button>
       <span>Page {page + 1}</span>
-      <button className="secondary" disabled={loading || !!error || rows.length < pageSize} onClick={() => { setLoading(true); setError(''); setPage(page + 1) }}>Next</button>
+      <button type="button" className="secondary" disabled={loading || !!error || rows.length < pageSize} onClick={() => { setLoading(true); setError(''); setPage(page + 1) }}>Next</button>
     </nav>
   </section>
 }
 
 export default function Admin() {
   const [resource, setResource] = useState('advertisements')
-  return <section className="admin-shell">
-    <aside className="admin-sidebar">
-      <p className="eyebrow">tanière admin</p>
-      <h2>Tables</h2>
-      {Object.entries(resources).map(([key, value]) => <button className="secondary" key={key} aria-pressed={resource === key} onClick={() => setResource(key)}>{value.label}</button>)}
-    </aside>
-    <div className="admin-content">
-      <ResourcePanel key={resource} resource={resource} />
+  return <section className="admin-page">
+    <header className="admin-page-header">
+      <div>
+        <p className="eyebrow">tanière admin</p>
+        <h1>Workspace</h1>
+        <p>Manage the job board from one clear and responsive workspace.</p>
+      </div>
+      <span className="admin-badge">Administrator</span>
+    </header>
+    <div className="admin-shell">
+      <aside className="admin-sidebar">
+        <div className="admin-sidebar-heading">
+          <p className="eyebrow">Navigation</p>
+          <h2>Resources</h2>
+        </div>
+        <nav className="admin-resource-nav" aria-label="Admin resources">
+          {Object.entries(resources).map(([key, value]) => <button type="button" className="secondary" key={key} aria-pressed={resource === key} onClick={() => setResource(key)}>{value.label}</button>)}
+        </nav>
+      </aside>
+      <main className="admin-content">
+        <ResourcePanel key={resource} resource={resource} />
+      </main>
     </div>
   </section>
 }
