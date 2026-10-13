@@ -5,7 +5,7 @@ from sqlalchemy.exc import DataError, IntegrityError
 from sqlalchemy.orm import Session
 
 # MySQL error codes
-_DUPLICATE_ENTRY = 1062
+_DUPLICATE_ENTRY = 1062  # duplicate entry on a UNIQUE column
 _FK_CHILD_FAILS = 1452  # inserting / updating a reference to a missing row
 _FK_PARENT_FAILS = 1451  # deleting a row that is still referenced
 
@@ -32,14 +32,18 @@ def commit(db: Session) -> None:
         code = exc.orig.args[0] if exc.orig and exc.orig.args else None
         if code == _DUPLICATE_ENTRY:
             raise HTTPException(
-                status.HTTP_409_CONFLICT, "A record with the same unique value already exists"
+                status.HTTP_409_CONFLICT,
+                "A record with the same unique value already exists",
             ) from exc
         if code == _FK_CHILD_FAILS:
             raise HTTPException(
-                status.HTTP_422_UNPROCESSABLE_CONTENT, "Referenced record does not exist"
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
+                "Referenced record does not exist",
             ) from exc
         if code == _FK_PARENT_FAILS:
             raise HTTPException(
                 status.HTTP_409_CONFLICT, "Record is still referenced by other records"
             ) from exc
-        raise HTTPException(status.HTTP_409_CONFLICT, "Integrity constraint violated") from exc
+        raise HTTPException(
+            status.HTTP_409_CONFLICT, "Integrity constraint violated"
+        ) from exc
