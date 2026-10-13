@@ -1,0 +1,90 @@
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 26px 24px 14px;
+    flex-wrap: wrap;
+    gap: 18px;
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--espresso);
+    font-family: var(--font-title);
+    font-size: 1.65rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    text-decoration: none;
+}
+
+.logoMark {
+    display: inline-grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border-radius: 50% 50% 45% 45%;
+    background: var(--rust);
+    color: var(--linen);
+    font-family: var(--font-title);
+    font-weight: 700;
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.link,
+.cta,
+.ghostButton {
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-size: 0.96rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.link {
+    color: var(--espresso);
+}
+
+.link:hover {
+    background: var(--sand);
+}
+
+.cta,
+.ghostButton {
+    border: 1px solid var(--rust);
+}
+
+.cta {
+    background: var(--rust);
+    color: var(--linen);
+}
+
+.ghostButton {
+    background: transparent;
+    color: var(--rust);
+}
+
+.error {
+    flex-basis: 100%;
+    margin: 0;
+}
+
+@media (max-width: 640px) {
+    .header {
+        padding-inline: 18px;
+    }
+
+    .nav {
+        justify-content: flex-start;
+    }
+}

@@ -1,0 +1,78 @@
+.card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 18px;
+    width: 100%;
+    background: var(--linen);
+    border: 1px solid rgba(107, 62, 34, 0.12);
+    box-shadow: var(--soft-shadow);
+    padding: clamp(20px, 3vw, 30px);
+    border-radius: 22px;
+}
+
+.initial {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--sand);
+    color: var(--rust);
+    font-family: var(--font-title);
+    font-size: 1.45rem;
+    font-weight: 700;
+}
+
+.content {
+    min-width: 0;
+}
+
+.meta {
+    color: var(--cocoa);
+    font-weight: 700;
+    margin: 0 0 10px;
+}
+
+.job_title {
+    margin: 0 0 6px;
+    font-size: clamp(1.45rem, 3vw, 2.2rem);
+}
+
+.summary {
+    color: var(--espresso);
+    font-size: 1.05rem;
+    max-width: 780px;
+}
+
+.badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.buttons {
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.detailGrid {
+    display: grid;
+    grid-template-columns: 1.1fr .9fr;
+    gap: 24px;
+}
+
+@media (max-width: 720px) {
+    .card,
+    .detailGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .initial {
+        width: 42px;
+        height: 42px;
+    }
+}

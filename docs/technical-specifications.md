@@ -1,41 +1,36 @@
 # Spécifications techniques
 
+Le projet tourne entièrement en local.
+
 ## Back-end
 
 ### Base de données
 
-- **MySQL** : système de gestion de base de données relationnelle
-- **SQLAlchemy** : ORM pour manipuler la base en Python
+- **MySQL 8** : seule base de l'application (et des tests)
+- **SQL brut** : `backend/sql/schemas.sql` (schéma de référence, supprime et recrée les tables)
+  et `backend/sql/seed.sql` (données de démonstration)
+- **SQLAlchemy 2** : ORM, modèles miroirs du schéma SQL
 - **PyMySQL** : driver de connexion entre Python et MySQL
-- **Sequel Ace** : client graphique pour consulter et administrer la base
 
 ### API
 
-- **FastAPI** : framework web pour construire l'API
-- **Pydantic** : validation et sérialisation des données
+- **FastAPI** : framework web, routes sous `/api`, Swagger sur `/docs`
+- **Pydantic / pydantic-settings** : validation des données et configuration via `.env`
+- **Authentification** : JWT Bearer (PyJWT, HS256, 60 min par défaut), mots de passe **bcrypt**
+- **Rôles** : `user`, `recruiter`, `admin` ; contrôle des droits côté serveur
+- **Limitation de débit** : fenêtre glissante en mémoire, par IP (login, candidature)
+- **Email** : notification SMTP optionnelle au propriétaire de l'annonce, en tâche de fond
 
 ### Outils de développement
 
-- **Ruff** : linter et formateur de code Python
-- **python-dotenv** : gestion des variables d'environnement via un fichier `.env`
-
-### Déploiement
-
-- **Render** : hébergement du back-end
-- **Aiven** : hébergement de la BDD
+- **pytest / TestClient** : tests API sur la base MySQL du `.env` (seedée)
 
 ## Front-end
 
-### Interface
-
-- **React** : bibliothèque pour construire l'interface utilisateur
-- **React Router DOM** : gestion de la navigation entre les pages
-- **CSS Modules** : styles CSS scopés par composant
-
-### Outils de développement
-
-- **ESLint** : analyse statique et respect des conventions du code JavaScript
-
-### Déploiement
-
-- **Vercel** : hébergement du front-end
+- **React 19** + **Vite**
+- **React Router DOM** : navigation entre les pages
+- **CSS Modules** + `App.css` : styles
+- **fetch** : client commun `src/api.js` (préfixe `/api`, URL via `VITE_API_URL`)
+- **AuthProvider** : état du compte, jeton JWT conservé par onglet (`sessionStorage`)
+- **ESLint** : analyse statique
+- Interface en français
