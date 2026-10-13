@@ -71,7 +71,7 @@ form button { margin-bottom: 8px; }
 
 .board-toolbar {
   display: grid;
-  grid-template-columns: minmax(220px, 1fr) auto;
+  grid-template-columns: minmax(180px, 1fr) minmax(140px, .5fr) auto;
   gap: 18px;
   align-items: end;
   margin: 16px 0 24px;

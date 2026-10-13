@@ -1,42 +1,47 @@
 from datetime import datetime
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field
+
+from app.schemas.common import LongText, ORMModel, Phone
+
+_Address = Annotated[str, Field(max_length=255)]
+_Country = Annotated[str, Field(max_length=100)]
 
 
-# Schéma de LECTURE : forme du JSON renvoyé par l'API.
-class CompanyRead(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
+class _CompanyBase(BaseModel):
+    """Fields required for both creation and replacement."""
 
+    name: Annotated[str, Field(min_length=1, max_length=150)]
+    email: EmailStr
+    phone: Phone
+    city: Annotated[str, Field(min_length=1, max_length=100)]
+
+
+class CompanyIn(_CompanyBase):
+    """Creation: optional fields default to null."""
+
+    description: LongText | None = None
+    address: _Address | None = None
+    country: _Country | None = None
+
+
+class CompanyUpdate(_CompanyBase):
+    """Full replacement: optional fields must be sent (as null to clear them)."""
+
+    description: LongText | None
+    address: _Address | None
+    country: _Country | None
+
+
+class CompanyOut(CompanyIn, ORMModel):
     id: int
-    name: str
-    description: str | None
-    email: str | None
-    phone: str | None
-    address: str | None
-    city: str | None
-    country: str | None
+    email: str  # no re-validation of stored data
     created_at: datetime
     updated_at: datetime
 
 
-# Schéma de CRÉATION : seul `name` est obligatoire (et unique en base).
-# EmailStr vérifie le format de l'adresse (nécessite email-validator).
-class CompanyCreate(BaseModel):
-    name: str = Field(min_length=1, max_length=150)
-    description: str | None = None
-    email: EmailStr | None = Field(default=None, max_length=255)
-    phone: str | None = Field(default=None, max_length=20)
-    address: str | None = Field(default=None, max_length=255)
-    city: str | None = Field(default=None, max_length=100)
-    country: str | None = Field(default=None, max_length=100)
-
-
-# Schéma de MISE À JOUR PARTIELLE : tous les champs sont facultatifs.
-class CompanyUpdate(BaseModel):
-    name: str | None = Field(default=None, min_length=1, max_length=150)
-    description: str | None = None
-    email: EmailStr | None = Field(default=None, max_length=255)
-    phone: str | None = Field(default=None, max_length=20)
-    address: str | None = Field(default=None, max_length=255)
-    city: str | None = Field(default=None, max_length=100)
-    country: str | None = Field(default=None, max_length=100)
+class CompanySummary(ORMModel):
+    id: int
+    name: str
+    city: str

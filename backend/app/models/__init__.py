@@ -1,8 +1,18 @@
-# Tous les modèles sont importés ici : SQLAlchemy doit les connaître pour
-# résoudre les relationships (ex. "Company" référencé depuis Advertisement).
-from app.models.advertisement import Advertisement
-from app.models.application import Application
-from app.models.company import Company
-from app.models.person import Person
+"""ORM models, mirroring sql/schemas.sql (the SQL file stays the source of truth)."""
 
-__all__ = ["Advertisement", "Application", "Company", "Person"]
+from app.core.database import Base
+from app.models.advertisement import CONTRACT_TYPES, Advertisement
+from app.models.company import Company
+from app.models.job_application import APPLICATION_STATUSES, JobApplication
+from app.models.user import USER_ROLES, User
+
+__all__ = [
+    "APPLICATION_STATUSES",
+    "CONTRACT_TYPES",
+    "USER_ROLES",
+    "Advertisement",
+    "Base",
+    "Company",
+    "JobApplication",
+    "User",
+]

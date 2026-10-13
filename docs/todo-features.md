@@ -1,65 +1,43 @@
-# Job Board — État de la livraison
+# Job Board — État du projet
 
-Référence finale : `sujets/jobBoard-project.pdf`. Guide d'intégration :
-`sujets/jobBoard-bootstrap.pdf`. Installation et limites : `README.md`.
+Sujet : `sujets/jobBoard-project.pdf`. Installation : `README.md` et `docs/setup-local.md`.
+Contrat d'API : `backend/README.md`.
 
 ## 1. Base de données
 
-- [x] Modèles SQLAlchemy : companies, advertisements, people, applications
-- [x] Relations, clés étrangères et suppression en cascade
-- [x] MySQL/Aiven configurable ; SQLite pour le développement et les tests isolés
-- [x] Initialisation explicite des tables via `python -m app.seed`
-- [x] Données de démonstration créées par le backend (`--demo`)
-- [x] Création explicite d'un administrateur, sans mot de passe prédéfini
-- [x] Tables séparées pour les identifiants et les sessions
-- [x] Requêtes SQL d'entraînement (`bootstrap-queries.sql`)
-- [ ] Validation de l'intégration sur la base MySQL distante (non exécutée ici)
+- [x] Schéma SQL : `companies`, `users`, `advertisements`, `job_applications`
+- [x] Relations, clés étrangères, suppressions en cascade / SET NULL
+- [x] Données de démonstration (`backend/sql/seed.sql`)
+- [x] Requêtes SQL d'entraînement (`docs/bootstrap-queries.sql`)
 
 ## 2. API
 
-- [x] CRUD annonces, entreprises, personnes et candidatures
-- [x] Route des annonces par entreprise
-- [x] Candidature visiteur ou connecté, message conservé en base
-- [x] Inscription, connexion, déconnexion et modification du compte
-- [x] Contrôle des rôles côté serveur et sessions expirables/révocables
-- [x] Mots de passe PBKDF2-SHA256 salés ; jetons stockés sous forme de hash
-- [x] Masquage des annonces non publiées pour le public
-- [x] Pagination, erreurs de validation, conflits et ressources absentes
-- [x] CORS configurable et environnement local documenté
-- [x] Tests API pytest et lint/format Ruff
+- [x] CRUD annonces, entreprises, utilisateurs et candidatures (admin)
+- [x] Liste publique des annonces actives avec filtres (`q`, `location`, `contract_type`, `company_id`)
+- [x] Candidature visiteur ou connecté, doublons refusés
+- [x] Inscription, connexion (JWT), lecture et modification du compte
+- [x] Mots de passe bcrypt, contrôle des rôles côté serveur
+- [x] Pagination `{items, total, page, limit}`, erreurs 401/403/404/409/422
+- [x] Limitation de débit (login, candidature)
+- [x] Notification email optionnelle (SMTP)
+- [x] Tests pytest
 
 ## 3. Frontend
 
-- [x] Liste paginée des annonces : titre, description courte, lieu, contrat, date
-- [x] Détails complets obtenus par fetch, sans rechargement ni popup
-- [x] Formulaire de candidature et confirmation après enregistrement
-- [x] Coordonnées du compte utilisées automatiquement pour un candidat connecté
-- [x] Pages d'inscription, connexion et modification du profil
-- [x] Redirection selon le rôle après connexion
-- [x] Administration protégée : listes, création, modification, suppression, pagination
-- [x] Chargement, erreurs et actions de reprise
-- [x] Conservation des composants existants et adaptation responsive des styles
-- [x] ESLint et build Vite
-- [x] Test Chromium de bout en bout, avec base et serveurs temporaires
+- [x] Liste paginée des annonces, recherche et filtres faits par l'API
+- [x] Détails chargés à la demande, sans rechargement ni popup
+- [x] Formulaire de candidature (coordonnées du compte pour un utilisateur connecté)
+- [x] Inscription, connexion, modification du profil
+- [x] Retour à la connexion quand la session a expiré au moment de postuler
+- [x] Administration protégée : listes paginées, création, modification, suppression
+- [x] Interface en français
 
-## 4. Livraison
+## 4. À faire plus tard
 
-- [x] README : installation, configuration, lancement, schéma, routes et pages
-- [x] Fichiers `.env.example` pour les deux applications
-- [x] Tests locaux sans accès à Aiven
-- [ ] Déploiement backend Render / frontend Vercel
-- [ ] Validation fonctionnelle sur MySQL et environnement déployé
-
-## 5. Limites / étapes suivantes
-
+- [ ] Droits du rôle `recruiter` (publier ses annonces, voir leurs candidatures)
+- [ ] « Mes candidatures » pour l'utilisateur connecté (route + page)
+- [ ] Changement de mot de passe depuis `/Account` (déjà géré par `PUT /api/auth/me`)
+- [ ] « Se souvenir de moi » à la connexion
+- [ ] Admin : listes déroulantes pour `company_id` / `user_id`, mise en forme des colonnes
 - [ ] Vérification d'email et récupération du mot de passe
-- [ ] Conversion sécurisée d'une fiche visiteur existante en compte
-- [ ] Limitation des tentatives de connexion avant ouverture publique
-- [ ] Envoi réel d'emails (actuellement : stockage des messages en base)
-- [ ] Import/scraping d'offres, si retenu par l'équipe
-
-Une adresse déjà enregistrée ne peut pas être utilisée pour une candidature
-anonyme : il faut se connecter, ou contacter l'administrateur si c'est une fiche
-sans compte. Ce choix évite d'associer un visiteur à l'identité d'une autre personne.
-Les catégories de l'exemple HireLoop ne sont pas exigées par le sujet final et
-n'ont pas été ajoutées au schéma existant.
+- [ ] Test de l'envoi SMTP réel

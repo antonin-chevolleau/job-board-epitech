@@ -1,4 +1,4 @@
-const baseUrl = (import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000').replace(/\/$/, '')
+const baseUrl = `${(import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000').replace(/\/$/, '')}/api`
 const tokenKey = 'jobboard-session'
 
 export function setToken(token) {
@@ -6,18 +6,18 @@ export function setToken(token) {
   else sessionStorage.removeItem(tokenKey)
 }
 
-export async function api(path, { body, ...options } = {}) {
+export async function api(path, { body, form, ...options } = {}) {
   const token = sessionStorage.getItem(tokenKey)
   let response
   try {
     response = await fetch(`${baseUrl}${path}`, {
       ...options,
       headers: {
-        ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+        ...(body !== undefined && !form ? { 'Content-Type': 'application/json' } : {}),
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...options.headers,
       },
-      ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
+      ...(body !== undefined ? { body: form ? new URLSearchParams(body) : JSON.stringify(body) } : {}),
     })
   } catch (error) {
     if (error.name === 'AbortError') throw error
@@ -31,9 +31,11 @@ export async function api(path, { body, ...options } = {}) {
       window.dispatchEvent(new Event('session-expired'))
     }
     const detail = data?.detail
-    throw new Error(Array.isArray(detail)
+    const error = new Error(Array.isArray(detail)
       ? detail.map((item) => `${item.loc.at(-1)} : ${item.msg}`).join(' ; ')
       : detail || `Erreur HTTP ${response.status}`)
+    error.status = response.status
+    throw error
   }
   return data
 }

@@ -1,4 +1,4 @@
-fai# Mise en place locale du projet JobBoard
+# Mise en place locale du projet JobBoard
 
 Ce guide explique comment démarrer le projet après un `git pull`.
 
@@ -6,6 +6,7 @@ Ce guide explique comment démarrer le projet après un `git pull`.
 
 - Python 3.12 ou plus récent
 - Node.js + npm
+- MySQL 8 en local
 - Deux terminaux : un pour le backend, un pour le frontend
 
 ## 1. Récupérer le projet
@@ -17,7 +18,7 @@ git pull
 Puis place-toi à la racine du projet :
 
 ```bash
-cd ~/ecole/job-board-bootstrap
+cd job-board
 ```
 
 ## 2. Démarrer le backend
@@ -28,10 +29,27 @@ Dans un premier terminal :
 cd backend
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-python -m app.seed --demo
-python -m uvicorn main:app --reload --port 8000
+pip install -r requirements-dev.txt
+cp .env.example .env  # seulement si tu n'as pas déjà de .env
+python -m uvicorn app.main:app --reload --port 8000
 ```
+
+Avant la dernière commande :
+
+1. crée la base locale et charge le schéma puis les données de démonstration
+   (**attention** : `schemas.sql` supprime et recrée les tables) :
+
+   ```bash
+   mysql -u <user> -p -e "CREATE DATABASE job_board CHARACTER SET utf8mb4;"
+   mysql -u <user> -p job_board < sql/schemas.sql
+   mysql -u <user> -p job_board < sql/seed.sql
+   ```
+
+2. renseigne dans `backend/.env` :
+   - `DATABASE_URL=mysql+pymysql://USER:PASSWORD@localhost:3306/job_board`
+   - `SECRET_KEY` : `python3 -c "import secrets; print(secrets.token_hex(32))"`
+
+Sans ces deux variables, le backend refuse de démarrer.
 
 Le backend doit tourner sur :
 
@@ -58,33 +76,23 @@ Dans un deuxième terminal, depuis la racine du projet :
 ```bash
 cd frontend
 npm install
-VITE_API_URL=http://127.0.0.1:8000 npm run dev
+npm run dev
 ```
 
-Le frontend doit tourner sur :
+Ouvre l'URL affichée par Vite (par défaut `http://localhost:5173`). Cette origine
+doit figurer dans `CORS_ORIGINS` (`backend/.env`).
 
-```txt
-http://127.0.0.1:5173
-```
+## 4. Comptes de démonstration
 
-## 4. Compte admin local
+`sql/seed.sql` crée trois comptes, mot de passe `admin1234` :
 
-Si aucun compte admin n'existe, crée-en un :
+| user_name   | rôle        |
+| ----------- | ----------- |
+| `admin`     | `admin`     |
+| `recruiter` | `recruiter` |
+| `jdoe`      | `user`      |
 
-```bash
-cd backend
-source .venv/bin/activate
-python -m app.seed --admin-email admin@example.com
-```
-
-Un mot de passe sera demandé.
-
-Dans l'interface, connecte-toi avec :
-
-```txt
-email: admin@example.com
-password: le mot de passe choisi
-```
+Connecte-toi avec le nom d'utilisateur (ou l'email) et le mot de passe.
 
 ## 5. Problèmes fréquents
 
@@ -103,7 +111,7 @@ Si ça ne répond pas, relance le backend.
 Lance le backend sur un autre port :
 
 ```bash
-python -m uvicorn main:app --reload --port 8001
+python -m uvicorn app.main:app --reload --port 8001
 ```
 
 Puis lance le frontend avec :
@@ -117,18 +125,16 @@ VITE_API_URL=http://127.0.0.1:8001 npm run dev
 Vite proposera souvent un autre port, par exemple `5174`.
 Ouvre simplement l'URL affichée dans le terminal.
 
-### Réinitialiser les données locales
+### Le backend refuse de démarrer
 
-Si tu utilises SQLite localement :
+- `database_url Field required` : `DATABASE_URL` manque dans `backend/.env`.
+- `SECRET_KEY must be at least 32 characters long` / `still the placeholder` :
+  génère une vraie clé (voir plus haut).
 
-```bash
-cd backend
-rm -f jobboard.db
-source .venv/bin/activate
-python -m app.seed --demo
-```
+### Le navigateur bloque les appels (CORS)
 
-Puis relance le backend.
+Ajoute l'origine exacte du front (ex. `http://localhost:5173`) à `CORS_ORIGINS`
+dans `backend/.env`, puis relance le backend.
 
 ## 6. Tests utiles
 
@@ -139,6 +145,8 @@ cd backend
 source .venv/bin/activate
 python -m pytest -q
 ```
+
+Les tests tournent sur la base du `.env`, seedée avec `sql/seed.sql`.
 
 Frontend :
 

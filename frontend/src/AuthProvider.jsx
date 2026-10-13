@@ -19,14 +19,14 @@ export default function AuthProvider({ children }) {
   }, [])
 
   async function login(credentials) {
-    const result = await api('/auth/login', { method: 'POST', body: credentials })
+    const result = await api('/auth/login', { method: 'POST', form: true, body: credentials })
     setToken(result.access_token)
-    setUser(result.user)
-    return result.user
+    const person = await api('/auth/me')
+    setUser(person)
+    return person
   }
 
-  async function logout() {
-    await api('/auth/logout', { method: 'POST' })
+  function logout() {
     setToken(null)
     setUser(null)
   }

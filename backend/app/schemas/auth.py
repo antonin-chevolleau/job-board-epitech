@@ -1,32 +1,37 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from typing import Annotated
 
-from app.schemas.person import PersonCreate, PersonRead, PersonUpdate
+from pydantic import BaseModel, EmailStr, Field
 
-
-class Register(PersonCreate):
-    model_config = ConfigDict(extra="forbid")
-    password: str = Field(min_length=10, max_length=128)
+from app.schemas.common import Password, Phone, UserName
 
 
-class Login(BaseModel):
+class RegisterIn(BaseModel):
+    """Public sign-up: always creates a plain `user` account."""
+
+    user_name: UserName
+    first_name: Annotated[str, Field(min_length=1, max_length=100)]
+    last_name: Annotated[str, Field(min_length=1, max_length=100)]
     email: EmailStr
-    password: str = Field(min_length=1, max_length=128)
+    phone: Phone
+    password: Password
 
 
-class AccountUpdate(PersonUpdate):
-    model_config = ConfigDict(extra="forbid")
+class ProfileUpdate(BaseModel):
+    """Self-service profile update (role and company cannot be changed here)."""
+
+    user_name: UserName
+    first_name: Annotated[str, Field(min_length=1, max_length=100)]
+    last_name: Annotated[str, Field(min_length=1, max_length=100)]
+    email: EmailStr
+    phone: Phone
+    new_password: Password | None = None
+    current_password: str | None = Field(
+        default=None, description="Required when `new_password` is set"
+    )
 
 
-class LoginRead(BaseModel):
+class TokenOut(BaseModel):
     access_token: str
     token_type: str = "bearer"
-    user: PersonRead
-
-
-class Apply(BaseModel):
-    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
-    firstname: str | None = Field(default=None, min_length=1, max_length=50)
-    lastname: str | None = Field(default=None, min_length=1, max_length=50)
-    email: EmailStr | None = Field(default=None, max_length=255)
-    phone: str | None = Field(default=None, max_length=20)
-    message: str = Field(min_length=1, max_length=10000)
+    role: str
+    user_id: int

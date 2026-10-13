@@ -27,28 +27,22 @@ export default function Login() {
     <aside className="auth-panel">
       <div>
         <p className="eyebrow">tanière</p>
-        <h1>Welcome home.</h1>
-        <p className="auth-note">Sign in to apply in one click: your details are already waiting for you.</p>
+        <h1>Bienvenue chez vous.</h1>
+        <p className="auth-note">Connectez-vous pour postuler en un clic : vos coordonnées vous attendent déjà.</p>
       </div>
-      <p className="auth-note">Made with care by Teka, Antonin & Najet</p>
+      <p className="auth-note">Fait avec soin par Teka, Antonin & Najet</p>
     </aside>
     <div className="auth-card">
-      <p className="eyebrow">Sign in</p>
-      <h1>Good to see you again.</h1>
+      <p className="eyebrow">Connexion</p>
+      <h1>Content de vous revoir.</h1>
       <form onSubmit={submit}>
-        <label>Email<input name="email" type="email" autoComplete="email" required /></label>
-        <label>Password<input name="password" type="password" autoComplete="current-password" required maxLength={128} /></label>
-        <div className="actions">
-          <label style={{ flexDirection: 'row', alignItems: 'center', margin: 0 }}>
-            <input type="checkbox" style={{ width: 'auto' }} /> Remember me
-          </label>
-          <span className="auth-note">Password reset coming soon</span>
-        </div>
+        <label>Nom d’utilisateur ou email<input name="username" autoComplete="username" required /></label>
+        <label>Mot de passe<input name="password" type="password" autoComplete="current-password" required maxLength={72} /></label>
         {error && <p role="alert">{error}</p>}
-        <button disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
+        <button disabled={busy}>{busy ? 'Connexion…' : 'Se connecter'}</button>
       </form>
-      <p><span className="eyebrow">new here?</span> <Link to="/CreateAccount">Create an account</Link></p>
-      <p className="auth-note">Admins are taken to the administration page, everyone else to the job board.</p>
+      <p><span className="eyebrow">nouveau ici ?</span> <Link to="/CreateAccount">Créer un compte</Link></p>
+      <p className="auth-note">Les administrateurs arrivent sur la page d’administration, les autres sur les offres.</p>
     </div>
   </section>
 }

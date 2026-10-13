@@ -1,25 +1,17 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { api } from '../api'
 import { useAuth } from '../auth'
 import style from './Advertisement.module.css'
 
-const contractLabels = {
-  cdi: 'Full-time',
-  cdd: 'Fixed-term',
-  alternance: 'Work-study',
-  stage: 'Internship',
-  freelance: 'Freelance',
-  interim: 'Interim',
-}
-
 function formatSalary(salary) {
-  if (salary == null) return 'Not specified'
+  if (salary == null) return 'Non précisé'
   return `${Number(salary).toLocaleString('fr-FR')} €`
 }
 
 function ApplicationForm({ ad }) {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [sent, setSent] = useState(false)
@@ -27,34 +19,40 @@ function ApplicationForm({ ad }) {
   async function submit(event) {
     event.preventDefault()
     const body = Object.fromEntries(new FormData(event.currentTarget))
+    if (!user) body.applicant_name = `${body.first_name} ${body.last_name}`
+    delete body.first_name
+    delete body.last_name
     setBusy(true)
     setError('')
     try {
+      // the API treats an expired token as an anonymous visitor: check the session first
+      if (user) await api('/auth/me')
       await api(`/advertisements/${ad.id}/applications`, { method: 'POST', body })
       setSent(true)
     } catch (err) {
-      setError(err.message)
+      if (user && err.status === 401) navigate('/Login')
+      else setError(err.message)
     } finally {
       setBusy(false)
     }
   }
 
-  if (sent) return <p role="status">Your application is saved and sent to the recruiter.</p>
+  if (sent) return <p role="status">Votre candidature est enregistrée et transmise au recruteur.</p>
 
   return <form onSubmit={submit} className="application-form">
-    <p className="eyebrow">Applying to</p>
+    <p className="eyebrow">Candidature</p>
     <h3>{ad.title}</h3>
-    <p className={style.meta}>{ad.company?.name || `Company #${ad.company_id}`}</p>
-    {user ? <p>Vous postulez en tant que {user.firstname} {user.lastname}. <Link to="/Account">Modifier mes coordonnées</Link></p> : <>
-      <p>Already have an account? <Link to="/Login">Sign in</Link> and your details fill in automatically.</p>
-      <label>Full name<input name="firstname" required maxLength={50} autoComplete="given-name" placeholder="First name" /></label>
-      <label>Last name<input name="lastname" required maxLength={50} autoComplete="family-name" placeholder="Last name" /></label>
-      <label>Email<input name="email" type="email" required maxLength={255} autoComplete="email" /></label>
-      <label>Phone<input name="phone" type="tel" maxLength={20} autoComplete="tel" /></label>
+    <p className={style.meta}>{ad.company.name}</p>
+    {user ? <p>Vous postulez en tant que {user.first_name} {user.last_name}. <Link to="/Account">Modifier mes coordonnées</Link></p> : <>
+      <p>Déjà un compte ? <Link to="/Login">Connectez-vous</Link> et vos coordonnées seront remplies automatiquement.</p>
+      <label>Prénom<input name="first_name" required maxLength={90} autoComplete="given-name" /></label>
+      <label>Nom<input name="last_name" required maxLength={90} autoComplete="family-name" /></label>
+      <label>Email<input name="applicant_email" type="email" required maxLength={255} autoComplete="email" /></label>
+      <label>Téléphone<input name="applicant_phone" type="tel" required minLength={3} maxLength={20} autoComplete="tel" /></label>
     </>}
-    <label>Message to the recruiter<textarea name="message" required maxLength={10000} rows={5} /></label>
+    <label>Message au recruteur<textarea name="message" required maxLength={5000} rows={5} /></label>
     {error && <p role="alert">{error}</p>}
-    <button disabled={busy}>{busy ? 'Sending…' : 'Send my application'}</button>
+    <button disabled={busy}>{busy ? 'Envoi…' : 'Envoyer ma candidature'}</button>
   </form>
 }
 
@@ -64,8 +62,6 @@ export default function Advertisement({ ad }) {
   const [applying, setApplying] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
-  const companyName = ad.company?.name || `Company #${ad.company_id}`
-  const contract = contractLabels[ad.contract_type] || 'Job offer'
 
   async function showDetails() {
     if (expanded) {
@@ -85,36 +81,34 @@ export default function Advertisement({ ad }) {
   }
 
   return <article className={style.card}>
-    <div className={style.initial} aria-hidden="true">{companyName.charAt(0).toUpperCase()}</div>
+    <div className={style.initial} aria-hidden="true">{ad.company.name.charAt(0).toUpperCase()}</div>
     <div className={style.content}>
       <h2 className={style.job_title}>{ad.title}</h2>
-      <p className={style.meta}>{companyName} · <time dateTime={ad.created_at}>{new Date(ad.created_at).toLocaleDateString('fr-FR')}</time></p>
+      <p className={style.meta}>{ad.company.name} · <time dateTime={ad.created_at}>{new Date(ad.created_at).toLocaleDateString('fr-FR')}</time></p>
       <div className={style.badges}>
-        <span className="badge">{contract}</span>
-        <span className="badge">{ad.location || 'Location to define'}</span>
+        <span className="badge">{ad.contract_type}</span>
+        <span className="badge">{ad.location || 'Lieu à définir'}</span>
         {ad.working_time && <span className="badge">{ad.working_time}</span>}
       </div>
       <p className={style.summary}>{ad.short_description}</p>
       <div className={style.buttons}>
         <button className="secondary" onClick={showDetails} disabled={busy} aria-expanded={expanded} aria-controls={`details-${ad.id}`}>
-          {busy ? 'Loading…' : expanded ? 'Show less' : 'Learn more'}
+          {busy ? 'Chargement…' : expanded ? 'Voir moins' : 'En savoir plus'}
         </button>
-        <button disabled={ad.status !== 'published'} onClick={() => setApplying(!applying)} aria-expanded={applying}>{applying ? 'Close form' : 'Apply'}</button>
+        <button disabled={!ad.is_active} onClick={() => setApplying(!applying)} aria-expanded={applying}>{applying ? 'Fermer le formulaire' : 'Postuler'}</button>
       </div>
       {error && <p role="alert">{error}</p>}
       {expanded && details && <section id={`details-${ad.id}`} className="details">
         <div className={style.detailGrid}>
           <div>
-            <h3>About the role</h3>
+            <h3>Le poste</h3>
             <p className="preserve-lines">{details.full_description}</p>
-            <h3>Who we are looking for</h3>
-            <p>Curious, rigorous and ready to learn. Motivation matters as much as experience.</p>
           </div>
           <dl>
-            <div><dt>Salary</dt><dd>{formatSalary(details.salary)}</dd></div>
-            <div><dt>Location</dt><dd>{details.location || 'Not specified'}</dd></div>
-            <div><dt>Working time</dt><dd>{details.working_time || 'Not specified'}</dd></div>
-            <div><dt>Contract</dt><dd>{contractLabels[details.contract_type] || 'Not specified'}</dd></div>
+            <div><dt>Salaire</dt><dd>{formatSalary(details.salary)}</dd></div>
+            <div><dt>Lieu</dt><dd>{details.location || 'Non précisé'}</dd></div>
+            <div><dt>Temps de travail</dt><dd>{details.working_time || 'Non précisé'}</dd></div>
+            <div><dt>Contrat</dt><dd>{details.contract_type}</dd></div>
           </dl>
         </div>
       </section>}

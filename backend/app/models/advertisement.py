@@ -1,80 +1,38 @@
-import enum
 from datetime import datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING
 
-from sqlalchemy import DECIMAL, TIMESTAMP, Enum, FetchedValue, ForeignKey, String, Text
-from sqlalchemy.dialects.mysql import INTEGER
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Numeric, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.clock import utcnow
-from app.database import Base
+from app.core.database import Base
+from app.models.company import Company
+from app.models.user import User
 
-# Imports réservés au typage : évitent un import circulaire à l'exécution.
-if TYPE_CHECKING:
-    from app.models.application import Application
-    from app.models.company import Company
+CONTRACT_TYPES = ("CDI", "CDD", "Stage", "Alternance", "Freelance")
 
 
-# Valeurs possibles de la colonne ENUM `contract_type`.
-# Les valeurs doivent être identiques à celles définies dans MySQL.
-class ContractType(enum.Enum):
-    cdi = "cdi"
-    cdd = "cdd"
-    alternance = "alternance"
-    stage = "stage"
-    freelance = "freelance"
-    interim = "interim"
-
-
-# Valeurs possibles de la colonne ENUM `status`
-class AdvertisementStatus(enum.Enum):
-    draft = "draft"
-    published = "published"
-    archived = "archived"
-
-
-# Représente la table `advertisements` (déjà créée dans Aiven).
-# Ce modèle ne crée rien : il décrit la table pour que SQLAlchemy sache la lire.
-# Une instance de cette classe = une ligne de la table.
 class Advertisement(Base):
     __tablename__ = "advertisements"
 
-    # Mapped[...] = type Python de la valeur ; mapped_column(...) = type SQL.
-    # `Mapped[X | None]` correspond à une colonne qui accepte NULL.
-    id: Mapped[int] = mapped_column(INTEGER(unsigned=True), primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    company_id: Mapped[int] = mapped_column(
+        ForeignKey("companies.id", ondelete="CASCADE")
+    )
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL")
+    )
     title: Mapped[str] = mapped_column(String(150))
     short_description: Mapped[str] = mapped_column(String(300))
     full_description: Mapped[str] = mapped_column(Text)
-    salary: Mapped[Decimal | None] = mapped_column(DECIMAL(10, 2))
     location: Mapped[str | None] = mapped_column(String(150))
+    salary: Mapped[Decimal | None] = mapped_column(Numeric(10, 2))
+    contract_type: Mapped[str] = mapped_column(Enum(*CONTRACT_TYPES))
     working_time: Mapped[str | None] = mapped_column(String(50))
-    # values_callable : stocke la valeur ("cdi") et non le nom de l'enum Python
-    contract_type: Mapped[ContractType | None] = mapped_column(
-        Enum(ContractType, values_callable=lambda e: [m.value for m in e])
-    )
-    status: Mapped[AdvertisementStatus] = mapped_column(
-        Enum(AdvertisementStatus, values_callable=lambda e: [m.value for m in e])
-    )
-    # ForeignKey : clé étrangère vers companies.id (déjà présente en base)
-    company_id: Mapped[int] = mapped_column(
-        INTEGER(unsigned=True), ForeignKey("companies.id", ondelete="CASCADE")
-    )
-    # created_at / updated_at sont remplis automatiquement par MySQL
-    created_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP, default=utcnow, server_default=FetchedValue()
-    )
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="1")
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
-        TIMESTAMP,
-        default=utcnow,
-        onupdate=utcnow,
-        server_default=FetchedValue(),
-        server_onupdate=FetchedValue(),
+        DateTime, server_default=func.now(), onupdate=func.now()
     )
 
-    # relationship : navigation entre objets (advertisement.company, ...),
-    # sans colonne supplémentaire en base.
-    company: Mapped["Company"] = relationship(back_populates="advertisements")
-    applications: Mapped[list["Application"]] = relationship(
-        back_populates="advertisement", passive_deletes=True
-    )
+    company: Mapped[Company] = relationship(back_populates="advertisements")
+    user: Mapped[User | None] = relationship()
