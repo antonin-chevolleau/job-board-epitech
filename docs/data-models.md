@@ -22,7 +22,7 @@ const company = {
   name: "", // VARCHAR(150), obligatoire, unique
   description: null, // TEXT, facultatif
   email: "", // VARCHAR(255), obligatoire, unique
-  phone: "", // VARCHAR(20), obligatoire
+  phone: "", // VARCHAR(20), obligatoire (3 caractères minimum)
   address: null, // VARCHAR(255), facultatif
   city: "", // VARCHAR(100), obligatoire
   country: null, // VARCHAR(100), facultatif
@@ -39,7 +39,7 @@ const user = {
   first_name: "", // VARCHAR(100), obligatoire
   last_name: "", // VARCHAR(100), obligatoire
   email: "", // VARCHAR(255), obligatoire, unique
-  phone: "", // VARCHAR(20), obligatoire
+  phone: "", // VARCHAR(20), obligatoire (3 caractères minimum)
   role: "user", // ENUM : "user" | "recruiter" | "admin" (défaut : "user")
   company_id: null, // INT, facultatif -> companies.id
 };
@@ -72,7 +72,7 @@ const jobApplication = {
   user_id: null, // INT, facultatif -> users.id (null = visiteur anonyme)
   applicant_name: "", // VARCHAR(200), obligatoire
   applicant_email: "", // VARCHAR(255), obligatoire
-  applicant_phone: "", // VARCHAR(20), obligatoire
+  applicant_phone: "", // VARCHAR(20), obligatoire (3 caractères minimum)
   message: "", // TEXT, obligatoire (5 000 caractères max côté API)
   status: "pending", // ENUM : "pending" | "reviewed" | "accepted" | "rejected"
   email_sent_at: null, // TIMESTAMP, date d'envoi de la notification au recruteur

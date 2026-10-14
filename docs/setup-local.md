@@ -5,7 +5,7 @@ Ce guide explique comment démarrer le projet après un `git pull`.
 ## Prérequis
 
 - Python 3.12 ou plus récent
-- Node.js + npm
+- Node.js 22.12 ou plus récent + npm
 - MySQL 8 en local
 - Deux terminaux : un pour le backend, un pour le frontend
 

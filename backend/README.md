@@ -1,9 +1,9 @@
 # Job Board | Backend
 
-REST API of the Job Board project (see `../sujets/jobBoard-project.pdf`): job advertisements, companies,
-users, authentication and job applications, stored in MySQL.
+API REST du projet Job Board (voir `../sujets/jobBoard-project.pdf`) : annonces, entreprises,
+utilisateurs, authentification et candidatures, stockés dans MySQL.
 
-Stack: **Python 3.12+**, **FastAPI**, **SQLAlchemy 2**, **MySQL 8**, JWT (PyJWT) and bcrypt.
+Stack : **Python 3.12+**, **FastAPI**, **SQLAlchemy 2**, **MySQL 8**, JWT (PyJWT) et bcrypt.
 
 ## Installation
 
@@ -11,62 +11,62 @@ Stack: **Python 3.12+**, **FastAPI**, **SQLAlchemy 2**, **MySQL 8**, JWT (PyJWT)
 cd backend
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt        # add requirements-dev.txt to run the tests
+pip install -r requirements.txt        # requirements-dev.txt en plus pour lancer les tests
 ```
 
 ## Configuration
 
-### 1. Database
+### 1. Base de données
 
-Create an empty database, then load the schema and the seed data:
+Créer une base vide, puis charger le schéma et les données de démonstration :
 
 ```bash
 mysql -u <user> -p -e "CREATE DATABASE job_board CHARACTER SET utf8mb4;"
-mysql -u <user> -p job_board < sql/schemas.sql   # WARNING: drops and recreates all tables
-mysql -u <user> -p job_board < sql/seed.sql      # optional: demo data
+mysql -u <user> -p job_board < sql/schemas.sql   # ATTENTION : supprime et recrée toutes les tables
+mysql -u <user> -p job_board < sql/seed.sql      # facultatif : données de démonstration
 ```
 
-Seeded accounts (password `admin1234` for all of them, **change it outside development**):
+Comptes du seed (mot de passe `admin1234` pour tous, **à changer hors développement**) :
 
-| user_name   | role        | notes                      |
-| ----------- | ----------- | -------------------------- |
-| `admin`     | `admin`     | access to the admin routes |
-| `recruiter` | `recruiter` | posts the Acme Tech ads    |
-| `jdoe`      | `user`      | regular candidate          |
+| user_name   | rôle        | remarques                       |
+| ----------- | ----------- | ------------------------------- |
+| `admin`     | `admin`     | accès aux routes d'admin        |
+| `recruiter` | `recruiter` | auteur des annonces d'Acme Tech |
+| `jdoe`      | `user`      | candidat classique              |
 
-### 2. Environment
+### 2. Environnement
 
 ```bash
 cp .env.example .env
 ```
 
-| Variable                          | Required | Description                                                                         |
-| --------------------------------- | -------- | ----------------------------------------------------------------------------------- |
-| `DATABASE_URL`                    | yes      | `mysql+pymysql://USER:PASSWORD@localhost:3306/job_board`                            |
-| `SECRET_KEY`                      | yes      | JWT signing key, at least 32 characters; the `.env.example` placeholder is rejected |
-| `ACCESS_TOKEN_EXPIRE_MINUTES`     | no       | Token lifetime, default `60`                                                        |
-| `CORS_ORIGINS`                    | no       | Comma-separated front-end origins, default: Vite on port 5173                |
-| `RATE_LIMIT_ENABLED`              | no       | Default `true`                                                                      |
-| `RATE_LIMIT_LOGIN`                | no       | Login attempts per client IP, default `10/minute`                                   |
-| `RATE_LIMIT_APPLY`                | no       | Applications per client IP, default `20/hour`                                       |
-| `SMTP_HOST`                       | no       | Enables the email sent to the ad owner on each application                          |
-| `SMTP_PORT`                       | no       | Default `587`                                                                       |
-| `SMTP_USERNAME` / `SMTP_PASSWORD` | no       | SMTP credentials                                                                    |
-| `SMTP_FROM`                       | no       | Sender address, default `noreply@jobboard.local`                                    |
-| `SMTP_STARTTLS`                   | no       | Default `true`                                                                      |
+| Variable                          | Obligatoire | Description                                                                                 |
+| --------------------------------- | ----------- | ------------------------------------------------------------------------------------------- |
+| `DATABASE_URL`                    | oui         | `mysql+pymysql://USER:PASSWORD@localhost:3306/job_board`                                    |
+| `SECRET_KEY`                      | oui         | Clé de signature des JWT, 32 caractères minimum ; la valeur de `.env.example` est refusée   |
+| `ACCESS_TOKEN_EXPIRE_MINUTES`     | non         | Durée de vie du jeton, défaut `60`                                                          |
+| `CORS_ORIGINS`                    | non         | Origines du front séparées par des virgules, défaut : Vite sur le port 5173                 |
+| `RATE_LIMIT_ENABLED`              | non         | Défaut `true`                                                                               |
+| `RATE_LIMIT_LOGIN`                | non         | Tentatives de connexion par IP client, défaut `10/minute`                                   |
+| `RATE_LIMIT_APPLY`                | non         | Candidatures par IP client, défaut `20/hour`                                                |
+| `SMTP_HOST`                       | non         | Active l'email envoyé au propriétaire de l'annonce à chaque candidature                     |
+| `SMTP_PORT`                       | non         | Défaut `587`                                                                                |
+| `SMTP_USERNAME` / `SMTP_PASSWORD` | non         | Identifiants SMTP                                                                           |
+| `SMTP_FROM`                       | non         | Adresse d'expédition, défaut `noreply@jobboard.local`                                       |
+| `SMTP_STARTTLS`                   | non         | Défaut `true`                                                                               |
 
-Generate a key with `python3 -c "import secrets; print(secrets.token_hex(32))"`.
-`.env` is git-ignored: never commit real credentials.
+Générer une clé avec `python3 -c "import secrets; print(secrets.token_hex(32))"`.
+`.env` est ignoré par git : ne jamais commiter de vrais identifiants.
 
-## Run
+## Lancement
 
 ```bash
 .venv/bin/uvicorn app.main:app --reload
 ```
 
-- API: <http://localhost:8000/api>
-- Interactive documentation (Swagger): <http://localhost:8000/docs>
-- Health check: <http://localhost:8000/health>
+- API : <http://localhost:8000/api>
+- Documentation interactive (Swagger) : <http://localhost:8000/docs>
+- Santé : <http://localhost:8000/health>
 
 ## Tests
 
@@ -74,142 +74,145 @@ Generate a key with `python3 -c "import secrets; print(secrets.token_hex(32))"`.
 .venv/bin/pytest
 ```
 
-The tests run against the database configured in `.env` (seeded with `sql/seed.sql`, they log in as
-`admin` / `admin1234`). Every test deletes the records it creates.
+Les tests tournent sur la base configurée dans `.env` (seedée avec `sql/seed.sql`, ils se connectent en
+`admin` / `admin1234`). Chaque test supprime les enregistrements qu'il crée.
 
-## Project layout
+## Structure du projet
 
 ```bash
 .
 |--- sql/
-|    |--- schemas.sql # database schema (source of truth, drops existing tables)
-|    |--- seed.sql # demo data
+|    |--- schemas.sql # schéma de la base (source de vérité, supprime les tables existantes)
+|    |--- seed.sql # données de démonstration
 |--- app/
-|    |--- main.py # FastAPI app, CORS, /health
-|    |--- core/ # config.py (settings from .env), database.py (engine, session), security.py (bcrypt, JWT), rate_limit.py (sliding window)
-|    |--- models/ # SQLAlchemy models, one file per table (mirror sql/schemas.sql)
-|    |--- schemas/ # Pydantic request / response models, one file per resource (+ common, auth)
+|    |--- main.py # application FastAPI, CORS, /health
+|    |--- core/ # config.py (réglages du .env), database.py (moteur, session), security.py (bcrypt, JWT), rate_limit.py (fenêtre glissante)
+|    |--- models/ # modèles SQLAlchemy, un fichier par table (miroir de sql/schemas.sql)
+|    |--- schemas/ # modèles Pydantic de requête / réponse, un fichier par ressource (+ common, auth)
 |    |--- api/
-|    |    |--- router.py #  mounts all routes under /api
-|    |    |--- deps.py #  dependencies: DB session, current user, admin check
-|    |    |--- pagination.py #  page / limit query parameters and paginate()
-|    |    |--- rate_limit.py #  per-IP rate limit dependencies (login, application)
-|    |    |--- errors.py #  get_or_404 and MySQL integrity errors mapped to HTTP errors
+|    |    |--- router.py #  monte toutes les routes sous /api
+|    |    |--- deps.py #  dépendances : session BDD, utilisateur courant, contrôle admin
+|    |    |--- pagination.py #  paramètres page / limit et paginate()
+|    |    |--- rate_limit.py #  dépendances de limitation de débit par IP (connexion, candidature)
+|    |    |--- errors.py #  get_or_404 et erreurs d'intégrité MySQL converties en erreurs HTTP
 |    |    |--- routes/ #  auth, companies, advertisements, users, applications
 |    |--- services/
-|    |    |--- emailer.py # optional SMTP notification for applications
-|--- tests/ # pytest API tests (run against the database of .env)
+|    |    |--- emailer.py # notification SMTP facultative des candidatures
+|--- tests/ # tests pytest de l'API (sur la base du .env)
 ```
 
-## Database schema
+## Schéma de la base
 
 ```
 companies 1 ──< users                 (users.company_id, ON DELETE SET NULL)
 companies 1 ──< advertisements        (ON DELETE CASCADE)
-users     1 ──< advertisements        (advertisements.user_id = poster, ON DELETE SET NULL)
+users     1 ──< advertisements        (advertisements.user_id = auteur, ON DELETE SET NULL)
 advertisements 1 ──< job_applications (ON DELETE CASCADE)
-users     1 ──< job_applications      (job_applications.user_id, nullable: anonymous, ON DELETE SET NULL)
+users     1 ──< job_applications      (job_applications.user_id, nullable : anonyme, ON DELETE SET NULL)
 ```
 
-| Table              | Main columns                                                                                                                                                                                                             |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `companies`        | `name` (unique), `description`, `email` (unique), `phone`, `address`, `city`, `country`                                                                                                                                  |
-| `users`            | `user_name` (unique), `hashed_password`, `first_name`, `last_name`, `email` (unique), `phone`, `role` (`user`/`recruiter`/`admin`), `company_id`                                                                         |
-| `advertisements`   | `company_id`, `user_id`, `title`, `short_description`, `full_description`, `location`, `salary`, `contract_type` (`CDI`/`CDD`/`Stage`/`Alternance`/`Freelance`), `working_time`, `is_active`                             |
-| `job_applications` | `advertisement_id`, `user_id`, `applicant_name`, `applicant_email`, `applicant_phone`, `message`, `status` (`pending`/`reviewed`/`accepted`/`rejected`), `email_sent_at`; unique (`advertisement_id`, `applicant_email`) |
+| Table              | Colonnes principales                                                                                                                                                                                                    |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `companies`        | `name` (unique), `description`, `email` (unique), `phone`, `address`, `city`, `country`                                                                                                                                 |
+| `users`            | `user_name` (unique), `hashed_password`, `first_name`, `last_name`, `email` (unique), `phone`, `role` (`user`/`recruiter`/`admin`), `company_id`                                                                        |
+| `advertisements`   | `company_id`, `user_id`, `title`, `short_description`, `full_description`, `location`, `salary`, `contract_type` (`CDI`/`CDD`/`Stage`/`Alternance`/`Freelance`), `working_time`, `is_active`                            |
+| `job_applications` | `advertisement_id`, `user_id`, `applicant_name`, `applicant_email`, `applicant_phone`, `message`, `status` (`pending`/`reviewed`/`accepted`/`rejected`), `email_sent_at` ; unique (`advertisement_id`, `applicant_email`) |
 
-Every table also has `id`, `created_at` and `updated_at`.
+Chaque table a aussi `id`, `created_at` et `updated_at`.
 
 ## API
 
-All routes are prefixed with `/api`. Authenticated routes expect `Authorization: Bearer <token>`.
+Toutes les routes sont préfixées par `/api`. Les routes authentifiées attendent `Authorization: Bearer <token>`.
 
 ### Conventions
 
-- **Pagination**: list routes accept `page` (default `1`) and `limit` (default `20`, max `100`) and
-  return `{ "items": [...], "total": 42, "page": 1, "limit": 20 }`.
-- **Update**: `PUT` replaces the whole resource: every field must be sent, optional ones as `null`
-  (omitting a field is a `422`, nothing is reset silently). The only exception is `password` on
-  `PUT /users/{id}`, which is left unchanged when omitted.
-- **Rate limiting**: `POST /api/auth/login` and `POST /api/advertisements/{id}/applications` are limited
-  per client IP (`RATE_LIMIT_LOGIN`, `RATE_LIMIT_APPLY`); every attempt counts, successful or not. Beyond
-  the limit the API answers `429` with a `Retry-After` header (seconds). Counters live in the process
-  memory: with several workers each one counts on its own. Behind a reverse proxy, run uvicorn with
-  `--forwarded-allow-ips=<proxy ip>` so the real client IP is used instead of the proxy's.
-- **Tokens**: an invalid or expired token is treated as "not logged in": public routes keep working,
-  protected routes answer `401`.
-- **Deletion**: `204 No Content`.
-- **Errors**: `401` not authenticated, `403` not an admin, `404` not found, `429` too many requests, `409` duplicate value or
-  record still referenced, `422` invalid body (too long, out of range, missing field) or reference to a missing record.
+- **Pagination** : les routes de liste acceptent `page` (défaut `1`) et `limit` (défaut `20`, max `100`) et
+  renvoient `{ "items": [...], "total": 42, "page": 1, "limit": 20 }`.
+- **Mise à jour** : `PUT` remplace toute la ressource : chaque champ doit être envoyé, les facultatifs en
+  `null` (omettre un champ donne un `422`, rien n'est réinitialisé en silence). Seule exception : `password`
+  sur `PUT /users/{id}`, inchangé s'il est omis.
+- **Limitation de débit** : `POST /api/auth/login` et `POST /api/advertisements/{id}/applications` sont
+  limitées par IP client (`RATE_LIMIT_LOGIN`, `RATE_LIMIT_APPLY`) ; chaque tentative compte, réussie ou non.
+  Au-delà de la limite, l'API répond `429` avec un en-tête `Retry-After` (en secondes). Les compteurs sont
+  en mémoire du processus : avec plusieurs workers, chacun compte de son côté. Derrière un reverse proxy,
+  lancer uvicorn avec `--forwarded-allow-ips=<ip du proxy>` pour utiliser l'IP réelle du client et non
+  celle du proxy.
+- **Jetons** : un jeton invalide ou expiré est traité comme « non connecté » : les routes publiques
+  fonctionnent toujours, les routes protégées répondent `401`.
+- **Suppression** : `204 No Content`.
+- **Erreurs** : `401` non authentifié, `403` pas admin, `404` introuvable, `429` trop de requêtes, `409`
+  valeur en double ou enregistrement encore référencé, `422` corps invalide (trop long, hors limites, champ
+  manquant) ou référence à un enregistrement inexistant.
 
-### Authentication
+### Authentification
 
-| Method | Route                | Access    | Description                                                                                           |
-| ------ | -------------------- | --------- | ----------------------------------------------------------------------------------------------------- |
-| POST   | `/api/auth/register` | public    | Create a `user` account (`user_name` cannot contain `@`)                                               |
-| POST   | `/api/auth/login`    | public    | Form fields `username` (user name or email) and `password`; returns `access_token`, `role`, `user_id` |
-| GET    | `/api/auth/me`       | logged in | Current profile                                                                                       |
-| PUT    | `/api/auth/me`       | logged in | Update the profile; `new_password` requires `current_password`                                        |
+| Méthode | Route                | Accès     | Description                                                                                                    |
+| ------- | -------------------- | --------- | -------------------------------------------------------------------------------------------------------------- |
+| POST    | `/api/auth/register` | public    | Crée un compte `user` (`user_name` ne peut pas contenir `@`)                                                   |
+| POST    | `/api/auth/login`    | public    | Champs de formulaire `username` (nom d'utilisateur ou email) et `password` ; renvoie `access_token`, `role`, `user_id` |
+| GET     | `/api/auth/me`       | connecté  | Profil courant                                                                                                 |
+| PUT     | `/api/auth/me`       | connecté  | Modifie le profil ; `new_password` exige `current_password`                                                    |
 
-The front end redirects to the administration page when the returned `role` is `admin`.
+Le front redirige vers la page d'administration quand le `role` renvoyé est `admin`.
 
-### Advertisements
+### Annonces
 
-| Method | Route                                   | Access              | Description                                                                                                                                     |
-| ------ | --------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| GET    | `/api/advertisements`                   | public              | List (without `full_description`). Filters: `q` (title, short description), `location`, `contract_type`, `company_id`, `is_active` (admin only) |
-| GET    | `/api/advertisements/{id}`              | public              | Full detail, used by the "Learn more" button                                                                                                    |
-| POST   | `/api/advertisements/{id}/applications` | public or logged in | Apply to an advertisement (see below)                                                                                                           |
-| POST   | `/api/advertisements`                   | admin               | Create (`user_id` defaults to the current admin)                                                                                                |
-| PUT    | `/api/advertisements/{id}`              | admin               | Update                                                                                                                                          |
-| DELETE | `/api/advertisements/{id}`              | admin               | Delete, with its applications                                                                                                                   |
+| Méthode | Route                                   | Accès                | Description                                                                                                                                         |
+| ------- | --------------------------------------- | -------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| GET     | `/api/advertisements`                   | public               | Liste (sans `full_description`). Filtres : `q` (titre, description courte), `location`, `contract_type`, `company_id`, `is_active` (admin seulement) |
+| GET     | `/api/advertisements/{id}`              | public               | Détail complet, utilisé par le bouton « En savoir plus »                                                                                            |
+| POST    | `/api/advertisements/{id}/applications` | public ou connecté   | Postuler à une annonce (voir ci-dessous)                                                                                                            |
+| POST    | `/api/advertisements`                   | admin                | Création (`user_id` vaut par défaut l'admin courant)                                                                                                |
+| PUT     | `/api/advertisements/{id}`              | admin                | Mise à jour                                                                                                                                         |
+| DELETE  | `/api/advertisements/{id}`              | admin                | Suppression, avec ses candidatures                                                                                                                  |
 
-Inactive advertisements are only visible to admins (others get `404`).
+Les annonces inactives ne sont visibles que par les admins (les autres reçoivent `404`).
 
-**Applying**: the body is `{ "message": "...", "applicant_name": "...", "applicant_email": "...", "applicant_phone": "..." }`.
-Logged-in users only need `message`: name and phone default to their profile and the email is always the
-one of their account (a submitted `applicant_email` is ignored). Anonymous visitors must provide the three
-identity fields and cannot use the email of an existing account (`409`, they must log in). One application
-per email and advertisement, and one per logged-in user and advertisement (`409`). When `SMTP_HOST` is set, the ad owner (the poster, otherwise
-the company) is emailed in the background and `email_sent_at` is recorded.
+**Candidature** : le corps est `{ "message": "...", "applicant_name": "...", "applicant_email": "...", "applicant_phone": "..." }`.
+Un utilisateur connecté n'a besoin que de `message` : le nom et le téléphone sont repris de son profil et
+l'email est toujours celui de son compte (un `applicant_email` envoyé est ignoré). Un visiteur anonyme doit
+fournir les trois champs d'identité et ne peut pas utiliser l'email d'un compte existant (`409`, il doit se
+connecter). Une candidature par email et par annonce, et une par utilisateur connecté et par annonce (`409`).
+Quand `SMTP_HOST` est défini, le propriétaire de l'annonce (l'auteur, sinon l'entreprise) reçoit un email en
+tâche de fond et `email_sent_at` est renseigné.
 
-### Companies
+### Entreprises
 
-| Method | Route                 | Access | Description                                            |
-| ------ | --------------------- | ------ | ------------------------------------------------------ |
-| GET    | `/api/companies`      | public | List; filter `q` (name, city)                          |
-| GET    | `/api/companies/{id}` | public | Detail                                                 |
-| POST   | `/api/companies`      | admin  | Create                                                 |
-| PUT    | `/api/companies/{id}` | admin  | Update                                                 |
-| DELETE | `/api/companies/{id}` | admin  | Delete, with its advertisements and their applications |
+| Méthode | Route                 | Accès  | Description                                           |
+| ------- | --------------------- | ------ | ----------------------------------------------------- |
+| GET     | `/api/companies`      | public | Liste ; filtre `q` (nom, ville)                       |
+| GET     | `/api/companies/{id}` | public | Détail                                                |
+| POST    | `/api/companies`      | admin  | Création                                              |
+| PUT     | `/api/companies/{id}` | admin  | Mise à jour                                           |
+| DELETE  | `/api/companies/{id}` | admin  | Suppression, avec ses annonces et leurs candidatures  |
 
-### Users (admin only)
+### Utilisateurs (admin seulement)
 
-| Method | Route             | Description                                                               |
-| ------ | ----------------- | ------------------------------------------------------------------------- |
-| GET    | `/api/users`      | List; filters `q` (user name, names, email), `role`, `company_id`         |
-| GET    | `/api/users/{id}` | Detail                                                                    |
-| POST   | `/api/users`      | Create (any role, `password` required, 8 to 72 characters)                |
-| PUT    | `/api/users/{id}` | Update; omit `password` to keep the current one                           |
-| DELETE | `/api/users/{id}` | Delete (an admin cannot delete themselves or remove their own admin role) |
+| Méthode | Route             | Description                                                                              |
+| ------- | ----------------- | ---------------------------------------------------------------------------------------- |
+| GET     | `/api/users`      | Liste ; filtres `q` (nom d'utilisateur, prénom, nom, email), `role`, `company_id`        |
+| GET     | `/api/users/{id}` | Détail                                                                                   |
+| POST    | `/api/users`      | Création (tout rôle, `password` obligatoire, 8 à 72 caractères)                          |
+| PUT     | `/api/users/{id}` | Mise à jour ; omettre `password` pour garder l'actuel                                    |
+| DELETE  | `/api/users/{id}` | Suppression (un admin ne peut ni se supprimer ni retirer son propre rôle admin)          |
 
-### Applications (admin only)
+### Candidatures (admin seulement)
 
-| Method | Route                    | Description                                                              |
-| ------ | ------------------------ | ------------------------------------------------------------------------ |
-| GET    | `/api/applications`      | List; filters `q` (name, email), `advertisement_id`, `user_id`, `status` |
-| GET    | `/api/applications/{id}` | Detail                                                                   |
-| POST   | `/api/applications`      | Create                                                                   |
-| PUT    | `/api/applications/{id}` | Update (e.g. change the `status`)                                        |
-| DELETE | `/api/applications/{id}` | Delete                                                                   |
+| Méthode | Route                    | Description                                                                 |
+| ------- | ------------------------ | --------------------------------------------------------------------------- |
+| GET     | `/api/applications`      | Liste ; filtres `q` (nom, email), `advertisement_id`, `user_id`, `status`   |
+| GET     | `/api/applications/{id}` | Détail                                                                      |
+| POST    | `/api/applications`      | Création                                                                    |
+| PUT     | `/api/applications/{id}` | Mise à jour (par ex. changer le `status`)                                   |
+| DELETE  | `/api/applications/{id}` | Suppression                                                                 |
 
 ## Pages
 
-The web pages (job board, authentication, administration) belong to the front end, which only talks to
-this API. This backend serves no HTML.
+Les pages web (offres, authentification, administration) appartiennent au front, qui ne communique
+qu'avec cette API. Ce backend ne sert aucun HTML.
 
-| Page           | Routes used                                                                                                          |
-| -------------- | -------------------------------------------------------------------------------------------------------------------- |
-| Job board      | `GET /advertisements`, `GET /advertisements/{id}` ("Learn more"), `POST /advertisements/{id}/applications` ("Apply") |
-| Sign in / up   | `POST /auth/login`, `POST /auth/register`, `GET` and `PUT /auth/me`                                                  |
-| Administration | CRUD on `/companies`, `/advertisements`, `/users`, `/applications` (paginated lists)                                 |
+| Page                    | Routes utilisées                                                                                                                 |
+| ----------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Offres                  | `GET /advertisements`, `GET /advertisements/{id}` (« En savoir plus »), `POST /advertisements/{id}/applications` (« Postuler ») |
+| Connexion / inscription | `POST /auth/login`, `POST /auth/register`, `GET` et `PUT /auth/me`                                                               |
+| Administration          | CRUD sur `/companies`, `/advertisements`, `/users`, `/applications` (listes paginées)                                            |
